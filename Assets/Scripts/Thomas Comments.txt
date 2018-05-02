@@ -1,0 +1,4 @@
+Some notes on parsing
+When you see an open parenthesis '(', the path builder should add a Vector3 of its location to a stack
+When it sees a period '.' it will peek at and move to the position at the top of the stack and then begin going down the next path from the junction
+When it sees a close parenthesis ')' it will pop the top of the stack.
