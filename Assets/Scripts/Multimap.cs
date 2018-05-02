@@ -3,38 +3,54 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Multimap {
-	List<String> keys;
-	List<List<String>> values;
+	List<char> keys;
+	List<List<string>> values;
 	List<List<float>> weights;
 	public Multimap(){
-		keys = new List<String>();
-		values = new List<List<String>>();
+		keys = new List<char>();
+		values = new List<List<string>>();
 		weights = new List<List<float>>();
 	}
 
-	public Add(String new_key, List<String> new_values, List<float> new_weights){
+	public void Add(char new_key, List<string> new_values, List<float> new_weights = null){
 		keys.Add(new_key);
 		values.Add(new_values);
+        if (new_weights == null)
+        {
+            int length = new_values.Count;
+            new_weights = new List<float>(length);
+            for (int i = 0; i < length; i++)
+            {
+                new_weights[i] = 1 / length;
+            }
+        }
 		weights.Add(new_weights);
 	}
 
-	public ContainsKey(String key){
+	public bool ContainsKey(char key){
 		return keys.Contains(key);
 	}
 
-	public ContainsValue(String valuesToCheck){
-		return values.Contains(valuesToCheck);
-	}
-
 	// Define the indexer to allow client code to use [] notation.
-	public String this[String i]
+	public string this[char i]
 	{
 		get 
 		{
 			int keyIndex = keys.IndexOf(i);
-			List<String> myValues = values[keyIndex];
+			List<string> myValues = values[keyIndex];
 			List<float> myWeights = weights[keyIndex];
-			return keys[i];
+            float randomNum = Random.value;
+            int index = 0;
+            while(index < myWeights.Count - 1)
+            {
+                if(randomNum < myWeights[index])
+                {
+                    break;
+                }
+                randomNum -= myWeights[index];
+                index++;
+            }
+			return myValues[index];
 		}
 	}
 }
