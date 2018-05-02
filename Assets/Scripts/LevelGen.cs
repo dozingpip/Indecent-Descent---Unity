@@ -5,13 +5,22 @@ using UnityEngine;
 public class LevelGen : MonoBehaviour {
 
 	Multimap map;
+	public GameObject normalTile;
+	public GameObject iceTile;
+	public GameObject mudTile;
+	public GameObject crackedTile;
+	public GameObject collectiblePrefab;
+	public Transform pathBuilder;
+	public int maxPathLength = 5;
+
+	int width = 10, length = 10;
 
 	// Use this for initialization
 	void Start () {
 		map = new Multimap();
 		mapIt();
 		parse("S");
-		
+		pathBuilder.position = new Vector3(Random.Range(0, width), 0, Random.Range(0, length));
 	}
 
 	void mapIt()
@@ -44,10 +53,10 @@ public class LevelGen : MonoBehaviour {
 
 		List<string> pathOptions = new List<string>();
 		List<float> pathWeights = new List<float>();
-		pathOptions.Add("KD(P)");
+		pathOptions.Add("KDP");
 		pathOptions.Add("K");
 		pathOptions.Add("KJ");
-		pathOptions.Add("KGKD(P)");
+		pathOptions.Add("KGKDP");
 
 		pathWeights.Add(0.25f);
 		pathWeights.Add(0.25f);
@@ -62,7 +71,7 @@ public class LevelGen : MonoBehaviour {
 
 		junctionWeights.Add(0.5f);
 		junctionWeights.Add(0.5f);
-		map.Add('J', pathOptions, pathWeights);
+		map.Add('J', junctionOptions, junctionWeights);
 
 		List<string> tileCollectOptions = new List<string>();
 		List<float> tileCollectWeights = new List<float>();
@@ -93,12 +102,51 @@ public class LevelGen : MonoBehaviour {
 
 	void parse(string key)
 	{
+		int pathLength = 0;
 		foreach(char c in key){
-			if(c.IsUpper()){
+			if(char.IsUpper(c) && pathLength < maxPathLength-1){
 				string i = map[c];
 				parse(i);
-			}else{
-				// terminal cases
+			}/*else if(char.IsUpper(c) && pathLength > maxPathLength){
+				parse("K");
+			}*/else{
+				Vector3 dir = new Vector3(0, 0, 0);
+				switch(c){
+					case 'n':
+						Instantiate(normalTile, pathBuilder.position, normalTile.transform.rotation);
+						break;
+					case 'c':
+						Instantiate(crackedTile, pathBuilder.position, crackedTile.transform.rotation);
+						break;
+					case 'i':
+						Instantiate(iceTile, pathBuilder.position, iceTile.transform.rotation);
+						break;
+					case 's':
+						Instantiate(mudTile, pathBuilder.position, mudTile.transform.rotation);
+						break;
+					case 'u':
+						pathBuilder.position+= new Vector3(1, 0, 0);
+						dir = new Vector3(1, 0, 0);
+						break;
+					case 'd':
+						pathBuilder.position-= new Vector3(1, 0, 0);
+						dir = new Vector3(-1, 0, 0);
+						break;
+					case 'l':
+						pathBuilder.position-= new Vector3(0, 0, -1);
+						dir = new Vector3(0, 0, -1);
+						break;
+					case 'r':
+						pathBuilder.position+= new Vector3(0, 0, 1);
+						dir = new Vector3(0, 0, 1);
+						break;
+					case 'x':
+						Instantiate(collectiblePrefab, pathBuilder.position + new Vector3(0, 1, 0), collectiblePrefab.transform.rotation);
+						break;
+					case 'g':
+						pathBuilder.position+= dir;
+						break;
+				}
 			}
 		}
 	}
