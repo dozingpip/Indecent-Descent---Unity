@@ -5,7 +5,16 @@ licenseType: Free
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - normalTile: {fileID: 1094564865418614, guid: e9452ad29b180fc46ac1ec6d25478d51,
+      type: 2}
+  - iceTile: {fileID: 1368518845136692, guid: 94673b6af8b7fae408030c5045fecb0d, type: 2}
+  - mudTile: {fileID: 1865432864428242, guid: 291903119baec5846a7e87201059c792, type: 2}
+  - crackedTile: {fileID: 1974287811022958, guid: aa93825e21bd61a4d8a95d8a78132629,
+      type: 2}
+  - collectiblePrefab: {fileID: 1082613637445898, guid: dc355ffd13c6a15499153dc26b991f76,
+      type: 2}
+  - pathBuilder: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

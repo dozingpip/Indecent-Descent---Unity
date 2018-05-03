@@ -18,10 +18,11 @@ public class Multimap {
         if (new_weights == null)
         {
             int length = new_values.Count;
+			Debug.Log("Length is: " + length);
             new_weights = new List<float>(length);
             for (int i = 0; i < length; i++)
             {
-                new_weights[i] = 1 / length;
+                new_weights.Add(1 / length);
             }
         }
 		weights.Add(new_weights);

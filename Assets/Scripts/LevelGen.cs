@@ -11,7 +11,8 @@ public class LevelGen : MonoBehaviour {
 	public GameObject crackedTile;
 	public GameObject collectiblePrefab;
 	public Transform pathBuilder;
-	public int maxPathLength = 5;
+	public int maxPathLength = 20;
+	int doublemax = 50;
 
 	int width = 10, length = 10;
 
@@ -19,8 +20,10 @@ public class LevelGen : MonoBehaviour {
 	void Start () {
 		map = new Multimap();
 		mapIt();
-		parse("S");
+		string path = createString("S");
+		//Debug.Log(parseIt("nM"));
 		pathBuilder.position = new Vector3(Random.Range(0, width), 0, Random.Range(0, length));
+		buildPath(path);
 	}
 
 	void mapIt()
@@ -66,8 +69,8 @@ public class LevelGen : MonoBehaviour {
 
 		List<string> junctionOptions = new List<string>();
 		List<float> junctionWeights = new List<float>();
-		junctionOptions.Add("MM");
-		junctionOptions.Add("MMM");
+		junctionOptions.Add("(DP.DP)");
+		junctionOptions.Add("(DP.DP.DP)");
 
 		junctionWeights.Add(0.5f);
 		junctionWeights.Add(0.5f);
@@ -92,62 +95,127 @@ public class LevelGen : MonoBehaviour {
 		map.Add('G', gapOptions, gapWeights);
 
 		List<string> startOptions = new List<string>();
-		startOptions.Add("nM");
+		startOptions.Add("nDP");
 		map.Add('S', startOptions);
-
-		List<string> middleOptions = new List<string>();
-		middleOptions.Add("nM");
-		map.Add('M', middleOptions);
 	}
 
-	void parse(string key)
+	string createString(string key)
 	{
-		int pathLength = 0;
-		foreach(char c in key){
-			if(char.IsUpper(c) && pathLength < maxPathLength-1){
-				string i = map[c];
-				parse(i);
-			}/*else if(char.IsUpper(c) && pathLength > maxPathLength){
-				parse("K");
-			}*/else{
-				Vector3 dir = new Vector3(0, 0, 0);
-				switch(c){
-					case 'n':
-						Instantiate(normalTile, pathBuilder.position, normalTile.transform.rotation);
-						break;
-					case 'c':
-						Instantiate(crackedTile, pathBuilder.position, crackedTile.transform.rotation);
-						break;
-					case 'i':
-						Instantiate(iceTile, pathBuilder.position, iceTile.transform.rotation);
-						break;
-					case 's':
-						Instantiate(mudTile, pathBuilder.position, mudTile.transform.rotation);
-						break;
-					case 'u':
-						pathBuilder.position+= new Vector3(1, 0, 0);
-						dir = new Vector3(1, 0, 0);
-						break;
-					case 'd':
-						pathBuilder.position-= new Vector3(1, 0, 0);
-						dir = new Vector3(-1, 0, 0);
-						break;
-					case 'l':
-						pathBuilder.position-= new Vector3(0, 0, -1);
-						dir = new Vector3(0, 0, -1);
-						break;
-					case 'r':
-						pathBuilder.position+= new Vector3(0, 0, 1);
-						dir = new Vector3(0, 0, 1);
-						break;
-					case 'x':
-						Instantiate(collectiblePrefab, pathBuilder.position + new Vector3(0, 1, 0), collectiblePrefab.transform.rotation);
-						break;
-					case 'g':
-						pathBuilder.position+= dir;
-						break;
+		string path = "";
+		int pathLength = 1;
+		int counter = 0;
+		while(pathLength < maxPathLength /*&& counter<doublemax */&& key.Length>0){
+			Debug.Log("count "+ counter);
+			counter++;
+			key = parseIt(key);
+			foreach(char c in key){
+				if(c == 'P'){
+					pathLength++;
+				}else if(c == 'G'){
+					pathLength+=2;
 				}
 			}
+
+			while(key.Length>0 && isTerminal(key[0])){
+				path = path + key[0];
+				key = key.Remove(0, 1);
+			}
 		}
+
+		while(key.Length>0){
+			key = wrapup(key);
+			while(key.Length>0 && isTerminal(key[0])){
+				path = path + key[0];
+				key = key.Remove(0, 1);
+			}
+		}
+		
+		Debug.Log("path: "+path+", length: "+pathLength);
+		return path;
+	}
+
+	string parseIt(string str){
+		string i = "";
+		foreach(char c in str){
+			if(isTerminal(c))
+				i += c;
+			else
+				i += map[c];
+		}
+		return i;
+	}
+
+	string wrapup(string str){
+		string i = "";
+		foreach(char c in str){
+			if(isTerminal(c))
+				i += c;
+			else if(c == 'P')
+				i += map['K'];
+			else if(c != 'J')
+				i += map[c];
+		}
+		Debug.Log("wrapup "+i);
+		return i;
+	}
+
+	void buildPath(string fullString){
+		Vector3 dir = new Vector3(0, 0, 0);
+		Stack<Vector3> pathStack = new Stack<Vector3>();
+		foreach(char c in fullString){
+			switch(c){
+				case 'n':
+					Instantiate(normalTile, pathBuilder.position, normalTile.transform.rotation);
+					break;
+				case 'c':
+					Instantiate(crackedTile, pathBuilder.position, crackedTile.transform.rotation);
+					break;
+				case 'i':
+					Instantiate(iceTile, pathBuilder.position, iceTile.transform.rotation);
+					break;
+				case 's':
+					Instantiate(mudTile, pathBuilder.position, mudTile.transform.rotation);
+					break;
+				case 'u':
+					dir = new Vector3(1, 0, 0);
+					pathBuilder.position+= dir;
+					break;
+				case 'd':
+					dir = new Vector3(-1, 0, 0);
+					pathBuilder.position+= dir;
+					break;
+				case 'l':
+					dir = new Vector3(0, 0, 1);
+					pathBuilder.position+= dir;
+					break;
+				case 'r':
+					dir = new Vector3(0, 0, -1);
+					pathBuilder.position+= dir;
+					break;
+				case 'x':
+					Instantiate(collectiblePrefab, pathBuilder.position + new Vector3(0, 1, 0), collectiblePrefab.transform.rotation);
+					break;
+				case 'g':
+					pathBuilder.position+= 2*dir;
+					break;
+				case '(':
+					pathStack.Push(pathBuilder.position);
+					break;
+				case '.':
+					pathBuilder.position = pathStack.Peek();
+					break;
+				case ')':
+					pathStack.Pop();
+					break;
+			}
+		}
+	}
+
+	bool isTerminal(char c){
+		return (char.IsLower(c) || c == '(' || c == ')' || c == '.');
+	}
+
+	bool isTile(char c){
+		return (c == 'n' || c == 'i' || c == 's' || c == 'c' || c == 'g');
 	}
 }
