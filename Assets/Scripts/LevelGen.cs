@@ -11,7 +11,8 @@ public class LevelGen : MonoBehaviour {
 	public GameObject crackedTile;
 	public GameObject collectiblePrefab;
 	public Transform pathBuilder;
-	public int maxPathLength = 20;
+    public int minPathLength = 10;
+    public int maxPathLength = 20;
 	Stack<string> forbiddenDirections;
 
 	int width = 10, length = 10;
@@ -57,14 +58,12 @@ public class LevelGen : MonoBehaviour {
 		List<string> pathOptions = new List<string>();
 		List<float> pathWeights = new List<float>();
 		pathOptions.Add("KDP");
-		pathOptions.Add("K");
 		pathOptions.Add("KJ");
 		pathOptions.Add("KGKDP");
 
-		pathWeights.Add(0.25f);
-		pathWeights.Add(0.25f);
-		pathWeights.Add(0.25f);
-		pathWeights.Add(0.25f);
+		pathWeights.Add(0.34f);
+		pathWeights.Add(0.33f);
+		pathWeights.Add(0.33f);
 		map.Add('P', pathOptions, pathWeights);
 
 		List<string> junctionOptions = new List<string>();
@@ -111,6 +110,10 @@ public class LevelGen : MonoBehaviour {
 					pathLength+=2;
 				}
 			}
+            if(pathLength > minPathLength)
+            {
+                minimumReached();
+            }
 		}
 
 		while(!isKeyFullOfTerminals(key)){
@@ -259,11 +262,19 @@ public class LevelGen : MonoBehaviour {
 		return i;
 	}
 
-	void buildPath(string fullString){
+    void minimumReached()
+    {
+        map.addNewValueToKey('P', "K");
+    }
+
+    void buildPath(string fullString){
 		Vector3 dir = new Vector3(0, 0, 0);
 		Stack<Vector3> pathStack = new Stack<Vector3>();
-		foreach(char c in fullString){
-			switch(c){
+        for (int i = 0; i < fullString.Length; i++)
+        {
+            char c = fullString[i];
+
+            switch (c){
 				case 'n':
 					Instantiate(normalTile, pathBuilder.position, normalTile.transform.rotation);
 					break;
@@ -295,10 +306,20 @@ public class LevelGen : MonoBehaviour {
 				case 'x':
 					Instantiate(collectiblePrefab, pathBuilder.position + new Vector3(0, 1, 0), collectiblePrefab.transform.rotation);
 					break;
-				case 'g':
-					pathBuilder.position+= 2*dir;
-					break;
-				case '(':
+                case 'g':
+                    if (i + 1 < fullString.Length && fullString[i + 1] == 'x')
+                    {
+                        pathBuilder.position += dir;
+                        Instantiate(collectiblePrefab, pathBuilder.position + new Vector3(0, 1, 0), collectiblePrefab.transform.rotation);
+                        pathBuilder.position += dir;
+                        i++;
+                    }
+                    else
+                    {
+                        pathBuilder.position += 2 * dir;
+                    }
+                    break;
+                case '(':
 					pathStack.Push(pathBuilder.position);
 					break;
 				case '.':

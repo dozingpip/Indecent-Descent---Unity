@@ -17,13 +17,7 @@ public class Multimap {
 		values.Add(new_values);
         if (new_weights == null)
         {
-            int length = new_values.Count;
-			Debug.Log("Length is: " + length);
-            new_weights = new List<float>(length);
-            for (int i = 0; i < length; i++)
-            {
-                new_weights.Add(1 / length);
-            }
+            new_weights = evenlyDistributeWeights(new_key);
         }
 		weights.Add(new_weights);
 	}
@@ -31,6 +25,31 @@ public class Multimap {
 	public bool ContainsKey(char key){
 		return keys.Contains(key);
 	}
+
+    public List<float> evenlyDistributeWeights(char key)
+    {
+        int keyIndex = keys.IndexOf(key);
+        List<string> myValues = values[keyIndex];
+        int length = myValues.Count;
+        Debug.Log("Length is: " + length);
+        List<float> new_weights = new List<float>(length);
+        for (int i = 0; i < length; i++)
+        {
+            new_weights.Add(1 / length);
+        }
+        return new_weights;
+    }
+
+    // A hacky solution to the minimum length issue
+    public void addNewValueToKey(char key, string newValue, List<float> new_weights = null)
+    {
+        int keyIndex = keys.IndexOf(key);
+        values[keyIndex].Add(newValue);
+        if (new_weights == null)
+        {
+            new_weights = evenlyDistributeWeights(key);
+        }
+    }
 
 	// Define the indexer to allow client code to use [] notation.
 	public string this[char i]
