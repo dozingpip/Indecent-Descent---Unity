@@ -12,16 +12,16 @@ public class LevelGen : MonoBehaviour {
 	public GameObject collectiblePrefab;
 	public Transform pathBuilder;
 	public int maxPathLength = 20;
-	int doublemax = 50;
+	Stack<string> forbiddenDirections;
 
 	int width = 10, length = 10;
 
 	// Use this for initialization
 	void Start () {
+		forbiddenDirections = new Stack<string>();
 		map = new Multimap();
 		mapIt();
 		string path = createString("S");
-		//Debug.Log(parseIt("nM"));
 		pathBuilder.position = new Vector3(Random.Range(0, width), 0, Random.Range(0, length));
 		buildPath(path);
 	}
@@ -101,12 +101,8 @@ public class LevelGen : MonoBehaviour {
 
 	string createString(string key)
 	{
-		string path = "";
 		int pathLength = 1;
-		int counter = 0;
-		while(pathLength < maxPathLength /*&& counter<doublemax */&& key.Length>0){
-			Debug.Log("count "+ counter);
-			counter++;
+		while(pathLength < maxPathLength && !isKeyFullOfTerminals(key)){
 			key = parseIt(key);
 			foreach(char c in key){
 				if(c == 'P'){
@@ -115,32 +111,137 @@ public class LevelGen : MonoBehaviour {
 					pathLength+=2;
 				}
 			}
-
-			while(key.Length>0 && isTerminal(key[0])){
-				path = path + key[0];
-				key = key.Remove(0, 1);
-			}
 		}
 
-		while(key.Length>0){
+		while(!isKeyFullOfTerminals(key)){
 			key = wrapup(key);
-			while(key.Length>0 && isTerminal(key[0])){
-				path = path + key[0];
-				key = key.Remove(0, 1);
-			}
 		}
 		
-		Debug.Log("path: "+path+", length: "+pathLength);
-		return path;
+		Debug.Log("key: "+key+", length: "+pathLength);
+		return key;
+	}
+
+	bool isKeyFullOfTerminals(string key){
+		foreach(char c in key){
+			if (!isTerminal(c)){
+				return false;
+			}
+		}
+		return true;
 	}
 
 	string parseIt(string str){
 		string i = "";
 		foreach(char c in str){
-			if(isTerminal(c))
+			if(isTerminal(c)){
+				Debug.Log(c);
+				switch(c){
+					case 'u':
+						Debug.Log("bad directions stack " + forbiddenDirections.Count + " on up");
+						if(forbiddenDirections.Count>0) forbiddenDirections.Pop();
+						forbiddenDirections.Push("d");
+						break;
+					case 'd':
+						Debug.Log("bad directions stack " + forbiddenDirections.Count + " on down");
+						if(forbiddenDirections.Count>0) forbiddenDirections.Pop();
+						forbiddenDirections.Push("u");
+						break;
+					case 'r':
+						Debug.Log("bad directions stack " + forbiddenDirections.Count + " on right");
+						if(forbiddenDirections.Count>0) forbiddenDirections.Pop();
+						forbiddenDirections.Push("l");
+						break;
+					case 'l':
+						Debug.Log("bad directions stack " + forbiddenDirections.Count + " on left");
+						if(forbiddenDirections.Count>0) forbiddenDirections.Pop();
+						forbiddenDirections.Push("r");
+						break;
+					default:
+						break;
+				}
 				i += c;
-			else
-				i += map[c];
+			}else{
+				if(c == 'D'){
+					string dir = map[c];
+					while(forbiddenDirections.Contains(dir)){
+						dir = map[c];
+					}
+					switch(dir){
+						case "u":
+							Debug.Log("bad directions stack " + forbiddenDirections.Count + " on up");
+							if(forbiddenDirections.Count>0) forbiddenDirections.Pop();
+							forbiddenDirections.Push("d");
+							break;
+						case "d":
+							Debug.Log("bad directions stack " + forbiddenDirections.Count + " on down");
+							if(forbiddenDirections.Count>0) forbiddenDirections.Pop();
+							forbiddenDirections.Push("u");
+							break;
+						case "r":
+							Debug.Log("bad directions stack " + forbiddenDirections.Count + " on right");
+							if(forbiddenDirections.Count>0) forbiddenDirections.Pop();
+							forbiddenDirections.Push("l");
+							break;
+						case "l":
+							Debug.Log("bad directions stack " + forbiddenDirections.Count + " on left");
+							if(forbiddenDirections.Count>0) forbiddenDirections.Pop();
+							forbiddenDirections.Push("r");
+							break;
+						default:
+							break;
+					}
+					i+= dir;
+				}else{
+					string nextPath = map[c];
+					if(nextPath == "KJ"){
+						string junction = map['J'];
+						if(junction.Length <= 7){ // 2 way junction
+							Debug.Log("bad directions stack " + forbiddenDirections.Count + " junction dir 0");
+							string dir0 = map['D'];
+							while(forbiddenDirections.Contains(dir0)){
+								dir0 = map['D'];
+							}
+							forbiddenDirections.Push(dir0);
+							Debug.Log("bad directions stack " + forbiddenDirections.Count);
+							string dir1 = map['D'];
+							while(forbiddenDirections.Contains(dir1)){
+								dir1 = map['D'];
+							}
+							i += "K("+dir0+"P."+dir1+"P)";
+							forbiddenDirections.Pop();
+							forbiddenDirections.Pop();
+							Debug.Log("bad directions stack " + forbiddenDirections.Count + " after pops");
+						}else{ // 3 way junction
+							Debug.Log("bad directions stack " + forbiddenDirections.Count + " junction dir 0");
+							string dir0 = map['D'];
+							while(forbiddenDirections.Contains(dir0)){
+								dir0 = map['D'];
+							}
+							forbiddenDirections.Push(dir0);
+
+							Debug.Log("bad directions stack " + forbiddenDirections.Count + " junction dir 1");
+							string dir1 = map['D'];
+							while(forbiddenDirections.Contains(dir1)){
+								dir1 = map['D'];
+							}
+							forbiddenDirections.Push(dir1);
+							Debug.Log("bad directions stack " + forbiddenDirections.Count + " junction dir 2");
+
+							string dir2 = map['D'];
+							while(forbiddenDirections.Contains(dir2)){
+								dir2 = map['D'];
+							}
+							i += "K("+dir0+"P."+dir1+"P."+dir2+"P)";
+							forbiddenDirections.Pop();
+							forbiddenDirections.Pop();
+							forbiddenDirections.Pop();
+							Debug.Log("bad directions stack " + forbiddenDirections.Count + " after pops");
+						}
+					}else{
+						i+=nextPath;
+					}
+				}
+			}
 		}
 		return i;
 	}
@@ -155,7 +256,6 @@ public class LevelGen : MonoBehaviour {
 			else if(c != 'J')
 				i += map[c];
 		}
-		Debug.Log("wrapup "+i);
 		return i;
 	}
 
