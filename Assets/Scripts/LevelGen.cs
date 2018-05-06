@@ -10,21 +10,28 @@ public class LevelGen : MonoBehaviour {
 	public GameObject mudTile;
 	public GameObject crackedTile;
 	public GameObject collectiblePrefab;
+	public GameObject wallPrefab;
 	public Transform pathBuilder;
     public int minPathLength = 10;
     public int maxPathLength = 20;
 	Stack<string> forbiddenDirections;
 
-	int width = 10, length = 10;
+
+	float width = 10, length = 10, wallHeight = 6;
+	GameObject level;
 
 	// Use this for initialization
 	void Start () {
+		level = new GameObject();
+		level.name = "Level 0";
 		forbiddenDirections = new Stack<string>();
 		map = new Multimap();
 		mapIt();
 		string path = createString("S");
-		pathBuilder.position = new Vector3(Random.Range(0, width), 0, Random.Range(0, length));
-		buildPath(path);
+		pathBuilder.position = new Vector3(Mathf.Floor(Random.Range(0, width)), 0, Mathf.Floor(Random.Range(0, length)));
+		buildPath(path, level.transform);
+
+		makeWallsAround(level.transform);
 	}
 
 	void mapIt()
@@ -267,25 +274,24 @@ public class LevelGen : MonoBehaviour {
         map.addNewValueToKey('P', "K");
     }
 
-    void buildPath(string fullString){
+    void buildPath(string fullString, Transform parent){
 		Vector3 dir = new Vector3(0, 0, 0);
 		Stack<Vector3> pathStack = new Stack<Vector3>();
         for (int i = 0; i < fullString.Length; i++)
         {
             char c = fullString[i];
-
             switch (c){
 				case 'n':
-					Instantiate(normalTile, pathBuilder.position, normalTile.transform.rotation);
+					Instantiate(normalTile, pathBuilder.position, normalTile.transform.rotation, parent);
 					break;
 				case 'c':
-					Instantiate(crackedTile, pathBuilder.position, crackedTile.transform.rotation);
+					Instantiate(crackedTile, pathBuilder.position, crackedTile.transform.rotation, parent);
 					break;
 				case 'i':
-					Instantiate(iceTile, pathBuilder.position, iceTile.transform.rotation);
+					Instantiate(iceTile, pathBuilder.position, iceTile.transform.rotation, parent);
 					break;
 				case 's':
-					Instantiate(mudTile, pathBuilder.position, mudTile.transform.rotation);
+					Instantiate(mudTile, pathBuilder.position, mudTile.transform.rotation, parent);
 					break;
 				case 'u':
 					dir = new Vector3(1, 0, 0);
@@ -304,13 +310,13 @@ public class LevelGen : MonoBehaviour {
 					pathBuilder.position+= dir;
 					break;
 				case 'x':
-					Instantiate(collectiblePrefab, pathBuilder.position + new Vector3(0, 1, 0), collectiblePrefab.transform.rotation);
+					Instantiate(collectiblePrefab, pathBuilder.position + new Vector3(0, 1, 0), collectiblePrefab.transform.rotation, parent);
 					break;
                 case 'g':
                     if (i + 1 < fullString.Length && fullString[i + 1] == 'x')
                     {
                         pathBuilder.position += dir;
-                        Instantiate(collectiblePrefab, pathBuilder.position + new Vector3(0, 1, 0), collectiblePrefab.transform.rotation);
+                        Instantiate(collectiblePrefab, pathBuilder.position + new Vector3(0, 1, 0), collectiblePrefab.transform.rotation, parent);
                         pathBuilder.position += dir;
                         i++;
                     }
@@ -338,5 +344,65 @@ public class LevelGen : MonoBehaviour {
 
 	bool isTile(char c){
 		return (c == 'n' || c == 'i' || c == 's' || c == 'c' || c == 'g');
+	}
+
+	void makeWallsAround(Transform level){
+		float smallestX = level.GetChild(0).position.x;
+		float smallestZ = level.GetChild(0).position.z;
+		float largestX = level.GetChild(0).position.x;
+		float largestZ = level.GetChild(0).position.z;
+
+		foreach(Transform child in level){
+			if(child.position.x < smallestX){
+				smallestX = child.position.x;
+			}
+			if(child.position.z < smallestZ){
+				smallestZ = child.position.z;
+			}
+			if(child.position.x > largestX){
+				largestX = child.position.x;
+			}
+			if(child.position.z > largestZ){
+				largestZ = child.position.z;
+			}
+		}
+
+		
+		// so the limits aren't right on top of any tiles before they should be
+		smallestX--;
+		smallestZ--;
+		largestX++;
+		largestZ++;
+		// center the walls around the level, cut off anything that's too far from this calculated center
+		float midX = (smallestX + largestX)/2.0f;
+		smallestX=midX-(width/2.0f);
+		largestX=midX+(width/2.0f);
+
+		float midY = (smallestZ + largestZ)/2.0f;
+		smallestZ=midY-(length/2.0f);
+		largestZ=midY+(length/2.0f);
+
+		Vector3 startOfWalls = new Vector3(smallestX, 0, smallestZ);
+		Vector3 upperRightEdge = new Vector3(smallestX, 0, largestZ);
+		Vector3 upperLeftEdge = new Vector3(largestX, 0, largestZ);
+		Vector3 lowerLeftEdge = new Vector3(largestX, 0, smallestZ);
+
+		makeFourPointBox(startOfWalls, lowerLeftEdge, upperLeftEdge, upperRightEdge);
+	}
+
+	void makeCubeBetweenPoints(Vector3 pointA, Vector3 pointB){
+		Vector3 between = pointB - pointA;
+		GameObject cube = Instantiate(wallPrefab, pointA, Quaternion.identity);
+		cube.transform.rotation = Quaternion.LookRotation(between);
+		cube.transform.localScale = new Vector3(1, wallHeight, between.magnitude);
+		cube.transform.position = pointA + (between/2.0f);
+		cube.transform.position+= new Vector3(0, wallHeight/2.0f, 0);
+	}
+
+	void makeFourPointBox(Vector3 point0, Vector3 point1, Vector3 point2, Vector3 point3){
+		makeCubeBetweenPoints(point0, point1);
+		makeCubeBetweenPoints(point1, point2);
+		makeCubeBetweenPoints(point2, point3);
+		makeCubeBetweenPoints(point0, point3);
 	}
 }
