@@ -1,17 +1,21 @@
 fileFormatVersion: 2
-guid: 491a80c888018e84abf9de9b80b41929
-timeCreated: 1525640477
+guid: ef544e4645ef63a43bacd9e80465d7d0
+timeCreated: 1525641602
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
-    21300000: LornkWalk_0
-    21300002: LornkWalk_1
-    21300004: LornkWalk_2
-    21300006: LornkWalk_3
-    21300008: LornkWalk_4
-    21300010: LornkWalk_5
-    21300012: LornkWalk_6
-    21300014: LornkWalk_7
+    21300000: LornkJump_0
+    21300002: LornkJump_1
+    21300004: LornkJump_2
+    21300006: LornkJump_3
+    21300008: LornkJump_4
+    21300010: LornkJump_5
+    21300012: LornkJump_6
+    21300014: LornkJump_7
+    21300016: LornkJump_8
+    21300018: LornkJump_9
+    21300020: LornkJump_10
+    21300022: LornkJump_11
   externalObjects: {}
   serializedVersion: 4
   mipmaps:
@@ -88,7 +92,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: LornkWalk_0
+      name: LornkJump_0
       rect:
         serializedVersion: 2
         x: 0
@@ -102,7 +106,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: LornkWalk_1
+      name: LornkJump_1
       rect:
         serializedVersion: 2
         x: 16
@@ -116,7 +120,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: LornkWalk_2
+      name: LornkJump_2
       rect:
         serializedVersion: 2
         x: 32
@@ -130,7 +134,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: LornkWalk_3
+      name: LornkJump_3
       rect:
         serializedVersion: 2
         x: 48
@@ -144,7 +148,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: LornkWalk_4
+      name: LornkJump_4
       rect:
         serializedVersion: 2
         x: 64
@@ -158,7 +162,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: LornkWalk_5
+      name: LornkJump_5
       rect:
         serializedVersion: 2
         x: 80
@@ -172,7 +176,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: LornkWalk_6
+      name: LornkJump_6
       rect:
         serializedVersion: 2
         x: 96
@@ -186,10 +190,66 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: LornkWalk_7
+      name: LornkJump_7
       rect:
         serializedVersion: 2
         x: 112
+        y: 0
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: LornkJump_8
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 0
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: LornkJump_9
+      rect:
+        serializedVersion: 2
+        x: 144
+        y: 0
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: LornkJump_10
+      rect:
+        serializedVersion: 2
+        x: 160
+        y: 0
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: LornkJump_11
+      rect:
+        serializedVersion: 2
+        x: 176
         y: 0
         width: 16
         height: 16

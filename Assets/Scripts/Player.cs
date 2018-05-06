@@ -14,6 +14,8 @@ public class Player : MonoBehaviour {
 
     public Sprite[] moveSprites;
 
+    public Sprite[] jumpSprites;
+
     public float knockbackStunLength = 0.1f;
 
     public float knockbackSpeed = 0.25f;
