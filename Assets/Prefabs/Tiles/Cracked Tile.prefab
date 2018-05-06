@@ -22,7 +22,7 @@ GameObject:
   - component: {fileID: 33406520336106574}
   - component: {fileID: 65236986603452648}
   - component: {fileID: 23034307441497706}
-  - component: {fileID: 114679877018742722}
+  - component: {fileID: 114566277468398702}
   m_Layer: 0
   m_Name: Cracked Tile
   m_TagString: Untagged
@@ -96,7 +96,7 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &114679877018742722
+--- !u!114 &114566277468398702
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
@@ -104,7 +104,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1974287811022958}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 203fc384ca5af8944a0ad3a83437107f, type: 3}
+  m_Script: {fileID: 11500000, guid: f6e0b26bca521cc4e89dcd2616fbbc9a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   crackedLookProgression: []
