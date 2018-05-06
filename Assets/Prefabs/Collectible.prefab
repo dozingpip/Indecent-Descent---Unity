@@ -23,7 +23,7 @@ GameObject:
   - component: {fileID: 135785416289447708}
   - component: {fileID: 23300865131969172}
   - component: {fileID: 108517415996971926}
-  - component: {fileID: 114671815679077606}
+  - component: {fileID: 114539345102113446}
   m_Layer: 0
   m_Name: Collectible
   m_TagString: Untagged
@@ -196,7 +196,7 @@ Light:
   m_UseColorTemperature: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
---- !u!114 &114671815679077606
+--- !u!114 &114539345102113446
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
@@ -204,7 +204,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1082613637445898}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a68dfdc6b3e1d51449003a8b8d8933c2, type: 3}
+  m_Script: {fileID: 11500000, guid: 4ba5af89a744b4847b1194be4838f66d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!135 &135607900057549040
