@@ -77,4 +77,9 @@ public class GameManager : MonoBehaviour
 		points++;
 		scoreDisplay.text = "Score: " + points;
 	}
+
+    public void gameOver()
+    {
+        SceneManager.LoadScene("mainMenu");
+    }
 }

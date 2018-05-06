@@ -85,7 +85,7 @@ MonoBehaviour:
   mudTile: {fileID: 1865432864428242, guid: 291903119baec5846a7e87201059c792, type: 2}
   crackedTile: {fileID: 1974287811022958, guid: aa93825e21bd61a4d8a95d8a78132629,
     type: 2}
-  collectiblePrefab: {fileID: 1082613637445898, guid: d2cd7e539b145704aa36fad047dde80d,
+  collectiblePrefab: {fileID: 1082613637445898, guid: f379e98091a2e5748b275b527ce02875,
     type: 2}
   pathBuilder: {fileID: 4323166817236376}
   minPathLength: 10
