@@ -4,4 +4,13 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/mainMenu.unity
+    guid: 1a6e7a66cae23dd4080dea0f10264fed
+  - enabled: 1
+    path: Assets/Scenes/levelQuestionMark.unity
+    guid: c928b5021a15ab345884985851bd985d
+  - enabled: 1
+    path: Assets/Scenes/gameOver.unity
+    guid: dcb5d38541d0ffd4bb1f4458fa82c83d

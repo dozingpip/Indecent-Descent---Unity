@@ -9,8 +9,6 @@ public class GameManager : MonoBehaviour
 	//Static instance of GameManager which allows it to be accessed by any other script.
 	public static GameManager instance = null;
 
-	// represents the index of the current scene
-	private int sceneIndex;
 	//number of total scenes
 	public int scenes;
 
@@ -47,14 +45,12 @@ public class GameManager : MonoBehaviour
 	void InitGame()
 	{
 		SceneManager.sceneLoaded += stageInit;
-		sceneIndex = SceneManager.GetActiveScene().buildIndex;
 	}
 
 	// Called when a new scene is loaded
 	// initialize variables for all the objects game manager needs to know about
 	void stageInit(Scene scene, LoadSceneMode mode)
 	{
-		sceneIndex = SceneManager.GetActiveScene().buildIndex;
 
 		GameObject[] scoreDispTemp = GameObject.FindGameObjectsWithTag("scoreDisplay");
 		if(scoreDispTemp.Length>0){
