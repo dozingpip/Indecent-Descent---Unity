@@ -16,6 +16,8 @@ public class LevelGen : MonoBehaviour {
 	public int maxPathLength = 20;
 	Stack<string> forbiddenDirections;
 
+	private bool hasPassedMinimum = false;
+
 	float width = 10, length = 10, wallHeight = 6;
 	int levelQueueHeight = 5;
 	int numLevel = 0;
@@ -109,8 +111,8 @@ public class LevelGen : MonoBehaviour {
 		tileCollectOptions.Add("Tx");
 		tileCollectOptions.Add("T");
 
-		tileCollectWeights.Add(0.5f);
-		tileCollectWeights.Add(0.5f);
+		tileCollectWeights.Add(0.2f);
+		tileCollectWeights.Add(0.8f);
 		map.Add('K', tileCollectOptions, tileCollectWeights);
 
 		List<string> gapOptions = new List<string>();
@@ -118,8 +120,8 @@ public class LevelGen : MonoBehaviour {
 		gapOptions.Add("gx");
 		gapOptions.Add("g");
 
-		gapWeights.Add(0.5f);
-		gapWeights.Add(0.5f);
+		gapWeights.Add(0.2f);
+		gapWeights.Add(0.8f);
 		map.Add('G', gapOptions, gapWeights);
 
 		List<string> startOptions = new List<string>();
@@ -139,9 +141,10 @@ public class LevelGen : MonoBehaviour {
 					pathLength+=2;
 				}
 			}
-			if(pathLength > minPathLength)
+			if(!hasPassedMinimum && pathLength > minPathLength)
 			{
-				minimumReached();
+				map.addNewValueToKey('P', "K");
+				hasPassedMinimum = true;
 			}
 		}
 
@@ -166,25 +169,25 @@ public class LevelGen : MonoBehaviour {
 		string i = "";
 		foreach(char c in str){
 			if(isTerminal(c)){
-				Debug.Log(c);
+//				Debug.Log(c);
 				switch(c){
 					case 'u':
-						Debug.Log("bad directions stack " + forbiddenDirections.Count + " on up");
+//						Debug.Log("bad directions stack " + forbiddenDirections.Count + " on up");
 						if(forbiddenDirections.Count>0) forbiddenDirections.Pop();
 						forbiddenDirections.Push("d");
 						break;
 					case 'd':
-						Debug.Log("bad directions stack " + forbiddenDirections.Count + " on down");
+//						Debug.Log("bad directions stack " + forbiddenDirections.Count + " on down");
 						if(forbiddenDirections.Count>0) forbiddenDirections.Pop();
 						forbiddenDirections.Push("u");
 						break;
 					case 'r':
-						Debug.Log("bad directions stack " + forbiddenDirections.Count + " on right");
+//						Debug.Log("bad directions stack " + forbiddenDirections.Count + " on right");
 						if(forbiddenDirections.Count>0) forbiddenDirections.Pop();
 						forbiddenDirections.Push("l");
 						break;
 					case 'l':
-						Debug.Log("bad directions stack " + forbiddenDirections.Count + " on left");
+//						Debug.Log("bad directions stack " + forbiddenDirections.Count + " on left");
 						if(forbiddenDirections.Count>0) forbiddenDirections.Pop();
 						forbiddenDirections.Push("r");
 						break;
@@ -200,22 +203,22 @@ public class LevelGen : MonoBehaviour {
 					}
 					switch(dir){
 						case "u":
-							Debug.Log("bad directions stack " + forbiddenDirections.Count + " on up");
+//							Debug.Log("bad directions stack " + forbiddenDirections.Count + " on up");
 							if(forbiddenDirections.Count>0) forbiddenDirections.Pop();
 							forbiddenDirections.Push("d");
 							break;
 						case "d":
-							Debug.Log("bad directions stack " + forbiddenDirections.Count + " on down");
+//							Debug.Log("bad directions stack " + forbiddenDirections.Count + " on down");
 							if(forbiddenDirections.Count>0) forbiddenDirections.Pop();
 							forbiddenDirections.Push("u");
 							break;
 						case "r":
-							Debug.Log("bad directions stack " + forbiddenDirections.Count + " on right");
+//							Debug.Log("bad directions stack " + forbiddenDirections.Count + " on right");
 							if(forbiddenDirections.Count>0) forbiddenDirections.Pop();
 							forbiddenDirections.Push("l");
 							break;
 						case "l":
-							Debug.Log("bad directions stack " + forbiddenDirections.Count + " on left");
+//							Debug.Log("bad directions stack " + forbiddenDirections.Count + " on left");
 							if(forbiddenDirections.Count>0) forbiddenDirections.Pop();
 							forbiddenDirections.Push("r");
 							break;
@@ -228,13 +231,13 @@ public class LevelGen : MonoBehaviour {
 					if(nextPath == "KJ"){
 						string junction = map['J'];
 						if(junction.Length <= 7){ // 2 way junction
-							Debug.Log("bad directions stack " + forbiddenDirections.Count + " junction dir 0");
+//							Debug.Log("bad directions stack " + forbiddenDirections.Count + " junction dir 0");
 							string dir0 = map['D'];
 							while(forbiddenDirections.Contains(dir0)){
 								dir0 = map['D'];
 							}
 							forbiddenDirections.Push(dir0);
-							Debug.Log("bad directions stack " + forbiddenDirections.Count);
+//							Debug.Log("bad directions stack " + forbiddenDirections.Count);
 							string dir1 = map['D'];
 							while(forbiddenDirections.Contains(dir1)){
 								dir1 = map['D'];
@@ -242,22 +245,22 @@ public class LevelGen : MonoBehaviour {
 							i += "K("+dir0+"P."+dir1+"P)";
 							forbiddenDirections.Pop();
 							forbiddenDirections.Pop();
-							Debug.Log("bad directions stack " + forbiddenDirections.Count + " after pops");
+//							Debug.Log("bad directions stack " + forbiddenDirections.Count + " after pops");
 						}else{ // 3 way junction
-							Debug.Log("bad directions stack " + forbiddenDirections.Count + " junction dir 0");
+//							Debug.Log("bad directions stack " + forbiddenDirections.Count + " junction dir 0");
 							string dir0 = map['D'];
 							while(forbiddenDirections.Contains(dir0)){
 								dir0 = map['D'];
 							}
 							forbiddenDirections.Push(dir0);
 
-							Debug.Log("bad directions stack " + forbiddenDirections.Count + " junction dir 1");
+//							Debug.Log("bad directions stack " + forbiddenDirections.Count + " junction dir 1");
 							string dir1 = map['D'];
 							while(forbiddenDirections.Contains(dir1)){
 								dir1 = map['D'];
 							}
 							forbiddenDirections.Push(dir1);
-							Debug.Log("bad directions stack " + forbiddenDirections.Count + " junction dir 2");
+//							Debug.Log("bad directions stack " + forbiddenDirections.Count + " junction dir 2");
 
 							string dir2 = map['D'];
 							while(forbiddenDirections.Contains(dir2)){
@@ -267,7 +270,7 @@ public class LevelGen : MonoBehaviour {
 							forbiddenDirections.Pop();
 							forbiddenDirections.Pop();
 							forbiddenDirections.Pop();
-							Debug.Log("bad directions stack " + forbiddenDirections.Count + " after pops");
+//							Debug.Log("bad directions stack " + forbiddenDirections.Count + " after pops");
 						}
 					}else{
 						i+=nextPath;
@@ -289,11 +292,6 @@ public class LevelGen : MonoBehaviour {
 				i += map[c];
 		}
 		return i;
-	}
-
-	void minimumReached()
-	{
-		map.addNewValueToKey('P', "K");
 	}
 
 	void buildPath(string fullString, Transform parent){
@@ -389,13 +387,13 @@ public class LevelGen : MonoBehaviour {
 			}
 		}
 		// center the walls around the level, cut off anything that's too far from this calculated center
-		float midX = (smallestX + largestX)/2.0f;
-		smallestX=midX-(width/2.0f);
-		largestX=midX+(width/2.0f);
+		float midX = Mathf.Floor((smallestX + largestX)/2.0f);
+		smallestX= Mathf.Floor(midX -(width/2.0f));
+		largestX= Mathf.Floor(midX +(width/2.0f));
 
-		float midZ = (smallestZ + largestZ)/2.0f;
-		smallestZ=midZ-(length/2.0f);
-		largestZ=midZ+(length/2.0f);
+		float midZ = Mathf.Floor((smallestZ + largestZ)/2.0f);
+		smallestZ= Mathf.Floor(midZ -(length/2.0f));
+		largestZ= Mathf.Floor(midZ +(length/2.0f));
 
 		Vector3 startOfWalls = new Vector3(smallestX, numLevel*wallHeight, smallestZ);
 		Vector3 upperRightEdge = new Vector3(smallestX, numLevel*wallHeight, largestZ);
