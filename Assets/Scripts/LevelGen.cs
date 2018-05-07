@@ -23,15 +23,27 @@ public class LevelGen : MonoBehaviour {
 	int numLevel = 0;
 	Queue<GameObject> levelQueue;
 	GameObject levels;
+	GameObject player;
+
+	float killLevelThreshold;
 
 	// Use this for initialization
 	void Start () {
+		player = GameObject.FindGameObjectWithTag("Player");
+		killLevelThreshold = wallHeight*5;
+		
 		levels = new GameObject();
 		levels.name = "Levels";
 		levelQueue = new Queue<GameObject>();
 		for(int i = 0; i<levelQueueHeight; i++){
 			levelQueue.Enqueue(newLevel());
 			numLevel++;
+		}
+	}
+
+	void Update(){
+		if((player.transform.position.y - levelQueue.Peek().transform.position.y) > killLevelThreshold){
+			DeleteOneAddOneLevel();
 		}
 	}
 
