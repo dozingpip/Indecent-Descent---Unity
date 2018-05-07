@@ -8,6 +8,8 @@ public class Player : MonoBehaviour {
 
     public float Speed = 0.125f;
 
+    public float jumpSpeed = 0.5f;
+
     public float moveThreshold = 0.5f;
 
     public float animSpeed = 0.125f;
@@ -19,6 +21,8 @@ public class Player : MonoBehaviour {
     public float knockbackStunLength = 0.1f;
 
     public float knockbackSpeed = 0.25f;
+
+    public float gravityStrength = 1;
 
     private Rigidbody rb;
 
@@ -34,6 +38,10 @@ public class Player : MonoBehaviour {
 
     private Vector3 knockbackDirection;
 
+    private float yVelocity;
+
+    private bool isGrounded;
+
     // Use this for initialization
     void Start () {
 		rb = GetComponent<Rigidbody>();
@@ -42,6 +50,7 @@ public class Player : MonoBehaviour {
         animFrame = 0;
         animTimer = animSpeed;
         knockbackStunTimer = 0;
+        isGrounded = false;
     }
 
     // Update is called once per frame
@@ -69,6 +78,13 @@ public class Player : MonoBehaviour {
     private void UpdateMove()
     {
         Vector3 move = Vector3.zero;
+
+        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
+        {
+            yVelocity = jumpSpeed;
+            isGrounded = false;
+            animFrame = 0;
+        }
 
         bool[] d = { false, false, false, false };
 
@@ -109,30 +125,54 @@ public class Player : MonoBehaviour {
         {
             facing = 3;
         }
-        if (d[0] || d[1] || d[2] || d[3])
+
+        Debug.Log("Grounded: " + isGrounded);
+
+        // Handles the sprite
+        if (!isGrounded)
         {
             animTimer -= Time.fixedDeltaTime;
             if (animTimer <= 0)
             {
                 animFrame++;
-                animFrame %= 2;
+                animFrame %= 3;
                 resetAnimTimer();
             }
+            sprite.sprite = jumpSprites[facing * 3 + animFrame];
         }
         else
         {
-            if (facing == 1 || facing == 3)
+            if (d[0] || d[1] || d[2] || d[3])
             {
-                animFrame = 0;
+                animTimer -= Time.fixedDeltaTime;
+                if (animTimer <= 0)
+                {
+                    animFrame++;
+                    resetAnimTimer();
+                }
             }
+            else
+            {
+                if (facing == 1 || facing == 3)
+                {
+                    animFrame = 0;
+                }
+            }
+            animFrame %= 2;
+            sprite.sprite = moveSprites[facing * 2 + animFrame];
         }
-
-        sprite.sprite = moveSprites[facing * 2 + animFrame];
         //UpdateSprite();
 
         //Transform swordParent = GetComponentsInChildren<Transform>();
-
+        move.y = yVelocity;
+        if(!isGrounded)
+        {
+            yVelocity -= gravityStrength * Time.fixedDeltaTime;
+        }
+        
+        Debug.Log("yVelocity " + yVelocity);
         rb.position += move;
+        //isGrounded = false;
     }
 
     private void resetAnimTimer()
@@ -140,15 +180,34 @@ public class Player : MonoBehaviour {
         animTimer = animSpeed;
     }
 
-    /*
     void OnCollisionEnter(Collision other)
     {
-        if(other.CompareTag("Enemy"))
+        /*
+        if(other.collider.CompareTag("Enemy"))
         {
             takeDamage(1);
         }
+        */
     }
-    */
+
+    void OnTriggerStay(Collider other)
+    {
+        if((other.CompareTag("Normal") || other.CompareTag("Ice") || other.CompareTag("Mud") || other.CompareTag("Cracked")) && !isGrounded)
+        {
+            Debug.Log("hit floor");
+            isGrounded = true;
+            yVelocity = 0;
+        }
+    }
+
+    void OnTriggerExit(Collider other)
+    {
+        if((other.CompareTag("Normal") || other.CompareTag("Ice") || other.CompareTag("Mud") || other.CompareTag("Cracked")))
+        {
+            Debug.Log("left floor");
+            isGrounded = false;
+        }
+    }
 
     public void takeDamage(int amount)
     {

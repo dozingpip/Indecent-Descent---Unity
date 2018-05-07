@@ -5,6 +5,11 @@ TagManager:
   serializedVersion: 2
   tags:
   - scoreDisplay
+  - PlayerFeet
+  - Ice
+  - Mud
+  - Normal
+  - Cracked
   layers:
   - Default
   - TransparentFX

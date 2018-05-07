@@ -25,7 +25,7 @@ GameObject:
   - component: {fileID: 114566277468398702}
   m_Layer: 0
   m_Name: Cracked Tile
-  m_TagString: Untagged
+  m_TagString: Cracked
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
