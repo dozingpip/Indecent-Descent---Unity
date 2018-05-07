@@ -16,22 +16,44 @@ public class LevelGen : MonoBehaviour {
     public int maxPathLength = 20;
 	Stack<string> forbiddenDirections;
 
-
 	float width = 10, length = 10, wallHeight = 6;
-	GameObject level;
+	int levelQueueHeight = 5;
+	int numLevel = 0;
+	Queue<GameObject> levelQueue;
+	GameObject levels;
 
 	// Use this for initialization
 	void Start () {
-		level = new GameObject();
-		level.name = "Level 0";
+		levels = new GameObject();
+		levels.name = "Levels";
+		levelQueue = new Queue<GameObject>();
+		for(int i = 0; i<levelQueueHeight; i++){
+			levelQueue.Enqueue(newLevel());
+			numLevel++;
+		}
+	}
+
+	void DeleteOneAddOneLevel(){
+		GameObject dequeued = levelQueue.Dequeue();
+		Destroy(dequeued);
+		levelQueue.Enqueue(newLevel());
+		numLevel++;
+	}
+
+	GameObject newLevel(){
+		GameObject level = new GameObject();
+		level.name = "Level "+numLevel;
 		forbiddenDirections = new Stack<string>();
 		map = new Multimap();
 		mapIt();
 		string path = createString("S");
-		pathBuilder.position = new Vector3(Mathf.Floor(Random.Range(0, width)), 0, Mathf.Floor(Random.Range(0, length)));
+		pathBuilder.position = new Vector3(Mathf.Floor(Random.Range(0, width)), wallHeight*numLevel, Mathf.Floor(Random.Range(0, length)));
 		buildPath(path, level.transform);
 
-		makeWallsAround(level.transform);
+		Vector3 mid = makeWallsAround(level.transform);
+		level.transform.position-=mid;
+		level.transform.parent = levels.transform;
+		return level;
 	}
 
 	void mapIt()
@@ -346,7 +368,7 @@ public class LevelGen : MonoBehaviour {
 		return (c == 'n' || c == 'i' || c == 's' || c == 'c' || c == 'g');
 	}
 
-	void makeWallsAround(Transform level){
+	Vector3 makeWallsAround(Transform level){
 		float smallestX = level.GetChild(0).position.x;
 		float smallestZ = level.GetChild(0).position.z;
 		float largestX = level.GetChild(0).position.x;
@@ -366,43 +388,46 @@ public class LevelGen : MonoBehaviour {
 				largestZ = child.position.z;
 			}
 		}
-
-		
-		// so the limits aren't right on top of any tiles before they should be
-		smallestX--;
-		smallestZ--;
-		largestX++;
-		largestZ++;
 		// center the walls around the level, cut off anything that's too far from this calculated center
 		float midX = (smallestX + largestX)/2.0f;
 		smallestX=midX-(width/2.0f);
 		largestX=midX+(width/2.0f);
 
-		float midY = (smallestZ + largestZ)/2.0f;
-		smallestZ=midY-(length/2.0f);
-		largestZ=midY+(length/2.0f);
+		float midZ = (smallestZ + largestZ)/2.0f;
+		smallestZ=midZ-(length/2.0f);
+		largestZ=midZ+(length/2.0f);
 
-		Vector3 startOfWalls = new Vector3(smallestX, 0, smallestZ);
-		Vector3 upperRightEdge = new Vector3(smallestX, 0, largestZ);
-		Vector3 upperLeftEdge = new Vector3(largestX, 0, largestZ);
-		Vector3 lowerLeftEdge = new Vector3(largestX, 0, smallestZ);
+		Vector3 startOfWalls = new Vector3(smallestX, numLevel*wallHeight, smallestZ);
+		Vector3 upperRightEdge = new Vector3(smallestX, numLevel*wallHeight, largestZ);
+		Vector3 upperLeftEdge = new Vector3(largestX, numLevel*wallHeight, largestZ);
+		Vector3 lowerLeftEdge = new Vector3(largestX, numLevel*wallHeight, smallestZ);
 
-		makeFourPointBox(startOfWalls, lowerLeftEdge, upperLeftEdge, upperRightEdge);
+		GameObject walls = makeFourPointBox(startOfWalls, lowerLeftEdge, upperLeftEdge, upperRightEdge);
+		walls.transform.parent = level;
+		return new Vector3(midX, 0, midZ);
 	}
 
-	void makeCubeBetweenPoints(Vector3 pointA, Vector3 pointB){
+	GameObject makeCubeBetweenPoints(Vector3 pointA, Vector3 pointB){
 		Vector3 between = pointB - pointA;
 		GameObject cube = Instantiate(wallPrefab, pointA, Quaternion.identity);
 		cube.transform.rotation = Quaternion.LookRotation(between);
 		cube.transform.localScale = new Vector3(1, wallHeight, between.magnitude);
 		cube.transform.position = pointA + (between/2.0f);
 		cube.transform.position+= new Vector3(0, wallHeight/2.0f, 0);
+		return cube;
 	}
 
-	void makeFourPointBox(Vector3 point0, Vector3 point1, Vector3 point2, Vector3 point3){
-		makeCubeBetweenPoints(point0, point1);
-		makeCubeBetweenPoints(point1, point2);
-		makeCubeBetweenPoints(point2, point3);
-		makeCubeBetweenPoints(point0, point3);
+	GameObject makeFourPointBox(Vector3 point0, Vector3 point1, Vector3 point2, Vector3 point3){
+		GameObject walls = new GameObject();
+		walls.name = "walls";
+		GameObject cube0 = makeCubeBetweenPoints(point0, point1);
+		GameObject cube1 = makeCubeBetweenPoints(point1, point2);
+		GameObject cube2 = makeCubeBetweenPoints(point2, point3);
+		GameObject cube3 = makeCubeBetweenPoints(point0, point3);
+		cube0.transform.parent =  walls.transform;
+		cube1.transform.parent =  walls.transform;
+		cube2.transform.parent =  walls.transform;
+		cube3.transform.parent =  walls.transform;
+		return walls;
 	}
 }
