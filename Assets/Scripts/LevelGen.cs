@@ -169,25 +169,20 @@ public class LevelGen : MonoBehaviour {
 		string i = "";
 		foreach(char c in str){
 			if(isTerminal(c)){
-//				Debug.Log(c);
 				switch(c){
 					case 'u':
-//						Debug.Log("bad directions stack " + forbiddenDirections.Count + " on up");
 						if(forbiddenDirections.Count>0) forbiddenDirections.Pop();
 						forbiddenDirections.Push("d");
 						break;
 					case 'd':
-//						Debug.Log("bad directions stack " + forbiddenDirections.Count + " on down");
 						if(forbiddenDirections.Count>0) forbiddenDirections.Pop();
 						forbiddenDirections.Push("u");
 						break;
 					case 'r':
-//						Debug.Log("bad directions stack " + forbiddenDirections.Count + " on right");
 						if(forbiddenDirections.Count>0) forbiddenDirections.Pop();
 						forbiddenDirections.Push("l");
 						break;
 					case 'l':
-//						Debug.Log("bad directions stack " + forbiddenDirections.Count + " on left");
 						if(forbiddenDirections.Count>0) forbiddenDirections.Pop();
 						forbiddenDirections.Push("r");
 						break;
@@ -203,22 +198,18 @@ public class LevelGen : MonoBehaviour {
 					}
 					switch(dir){
 						case "u":
-//							Debug.Log("bad directions stack " + forbiddenDirections.Count + " on up");
 							if(forbiddenDirections.Count>0) forbiddenDirections.Pop();
 							forbiddenDirections.Push("d");
 							break;
 						case "d":
-//							Debug.Log("bad directions stack " + forbiddenDirections.Count + " on down");
 							if(forbiddenDirections.Count>0) forbiddenDirections.Pop();
 							forbiddenDirections.Push("u");
 							break;
 						case "r":
-//							Debug.Log("bad directions stack " + forbiddenDirections.Count + " on right");
 							if(forbiddenDirections.Count>0) forbiddenDirections.Pop();
 							forbiddenDirections.Push("l");
 							break;
 						case "l":
-//							Debug.Log("bad directions stack " + forbiddenDirections.Count + " on left");
 							if(forbiddenDirections.Count>0) forbiddenDirections.Pop();
 							forbiddenDirections.Push("r");
 							break;
@@ -231,13 +222,12 @@ public class LevelGen : MonoBehaviour {
 					if(nextPath == "KJ"){
 						string junction = map['J'];
 						if(junction.Length <= 7){ // 2 way junction
-//							Debug.Log("bad directions stack " + forbiddenDirections.Count + " junction dir 0");
 							string dir0 = map['D'];
 							while(forbiddenDirections.Contains(dir0)){
 								dir0 = map['D'];
 							}
 							forbiddenDirections.Push(dir0);
-//							Debug.Log("bad directions stack " + forbiddenDirections.Count);
+
 							string dir1 = map['D'];
 							while(forbiddenDirections.Contains(dir1)){
 								dir1 = map['D'];
@@ -245,22 +235,18 @@ public class LevelGen : MonoBehaviour {
 							i += "K("+dir0+"P."+dir1+"P)";
 							forbiddenDirections.Pop();
 							forbiddenDirections.Pop();
-//							Debug.Log("bad directions stack " + forbiddenDirections.Count + " after pops");
 						}else{ // 3 way junction
-//							Debug.Log("bad directions stack " + forbiddenDirections.Count + " junction dir 0");
 							string dir0 = map['D'];
 							while(forbiddenDirections.Contains(dir0)){
 								dir0 = map['D'];
 							}
 							forbiddenDirections.Push(dir0);
 
-//							Debug.Log("bad directions stack " + forbiddenDirections.Count + " junction dir 1");
 							string dir1 = map['D'];
 							while(forbiddenDirections.Contains(dir1)){
 								dir1 = map['D'];
 							}
 							forbiddenDirections.Push(dir1);
-//							Debug.Log("bad directions stack " + forbiddenDirections.Count + " junction dir 2");
 
 							string dir2 = map['D'];
 							while(forbiddenDirections.Contains(dir2)){
@@ -270,7 +256,6 @@ public class LevelGen : MonoBehaviour {
 							forbiddenDirections.Pop();
 							forbiddenDirections.Pop();
 							forbiddenDirections.Pop();
-//							Debug.Log("bad directions stack " + forbiddenDirections.Count + " after pops");
 						}
 					}else{
 						i+=nextPath;
@@ -300,60 +285,70 @@ public class LevelGen : MonoBehaviour {
 		for (int i = 0; i < fullString.Length; i++)
 		{
 			char c = fullString[i];
-			switch (c){
-				case 'n':
-					Instantiate(normalTile, pathBuilder.position, normalTile.transform.rotation, parent);
-					break;
-				case 'c':
-					Instantiate(crackedTile, pathBuilder.position, crackedTile.transform.rotation, parent);
-					break;
-				case 'i':
-					Instantiate(iceTile, pathBuilder.position, iceTile.transform.rotation, parent);
-					break;
-				case 's':
-					Instantiate(mudTile, pathBuilder.position, mudTile.transform.rotation, parent);
-					break;
-				case 'u':
-					dir = new Vector3(1, 0, 0);
-					pathBuilder.position+= dir;
-					break;
-				case 'd':
-					dir = new Vector3(-1, 0, 0);
-					pathBuilder.position+= dir;
-					break;
-				case 'l':
-					dir = new Vector3(0, 0, 1);
-					pathBuilder.position+= dir;
-					break;
-				case 'r':
-					dir = new Vector3(0, 0, -1);
-					pathBuilder.position+= dir;
-					break;
-				case 'x':
-					Instantiate(collectiblePrefab, pathBuilder.position + new Vector3(0, 1, 0), collectiblePrefab.transform.rotation, parent);
-					break;
-				case 'g':
-					if (i + 1 < fullString.Length && fullString[i + 1] == 'x')
-					{
-						pathBuilder.position += dir;
+
+			if(isTile(c)){
+				Vector3 boxScale = new Vector3(0.25f, 0.25f, 0.25f);
+				Collider[] hitColliders = Physics.OverlapBox(pathBuilder.position, boxScale, pathBuilder.rotation);
+				if(hitColliders.Length<1){
+					switch(c){
+						case 'n':
+							Instantiate(normalTile, pathBuilder.position, normalTile.transform.rotation, parent);
+							break;
+						case 'c':
+							Instantiate(crackedTile, pathBuilder.position, crackedTile.transform.rotation, parent);
+							break;
+						case 'i':
+							Instantiate(iceTile, pathBuilder.position, iceTile.transform.rotation, parent);
+							break;
+						case 's':
+							Instantiate(mudTile, pathBuilder.position, mudTile.transform.rotation, parent);
+							break;
+						case 'g':
+							if (i + 1 < fullString.Length && fullString[i + 1] == 'x')
+							{
+								pathBuilder.position += dir;
+								Instantiate(collectiblePrefab, pathBuilder.position + new Vector3(0, 1, 0), collectiblePrefab.transform.rotation, parent);
+								pathBuilder.position += dir;
+								i++;
+							}
+							else
+							{
+								pathBuilder.position += 2 * dir;
+							}
+							break;
+					}
+				}
+			}else{
+				switch (c){
+					case 'u':
+						dir = new Vector3(1, 0, 0);
+						pathBuilder.position+= dir;
+						break;
+					case 'd':
+						dir = new Vector3(-1, 0, 0);
+						pathBuilder.position+= dir;
+						break;
+					case 'l':
+						dir = new Vector3(0, 0, 1);
+						pathBuilder.position+= dir;
+						break;
+					case 'r':
+						dir = new Vector3(0, 0, -1);
+						pathBuilder.position+= dir;
+						break;
+					case 'x':
 						Instantiate(collectiblePrefab, pathBuilder.position + new Vector3(0, 1, 0), collectiblePrefab.transform.rotation, parent);
-						pathBuilder.position += dir;
-						i++;
-					}
-					else
-					{
-						pathBuilder.position += 2 * dir;
-					}
-					break;
-				case '(':
-					pathStack.Push(pathBuilder.position);
-					break;
-				case '.':
-					pathBuilder.position = pathStack.Peek();
-					break;
-				case ')':
-					pathStack.Pop();
-					break;
+						break;
+					case '(':
+						pathStack.Push(pathBuilder.position);
+						break;
+					case '.':
+						pathBuilder.position = pathStack.Peek();
+						break;
+					case ')':
+						pathStack.Pop();
+						break;
+				}
 			}
 		}
 	}
