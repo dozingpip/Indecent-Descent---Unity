@@ -12,8 +12,8 @@ public class LevelGen : MonoBehaviour {
 	public GameObject collectiblePrefab;
 	public GameObject wallPrefab;
 	public Transform pathBuilder;
-    public int minPathLength = 10;
-    public int maxPathLength = 20;
+	public int minPathLength = 10;
+	public int maxPathLength = 20;
 	Stack<string> forbiddenDirections;
 
 	float width = 10, length = 10, wallHeight = 6;
@@ -139,10 +139,10 @@ public class LevelGen : MonoBehaviour {
 					pathLength+=2;
 				}
 			}
-            if(pathLength > minPathLength)
-            {
-                minimumReached();
-            }
+			if(pathLength > minPathLength)
+			{
+				minimumReached();
+			}
 		}
 
 		while(!isKeyFullOfTerminals(key)){
@@ -291,18 +291,18 @@ public class LevelGen : MonoBehaviour {
 		return i;
 	}
 
-    void minimumReached()
-    {
-        map.addNewValueToKey('P', "K");
-    }
+	void minimumReached()
+	{
+		map.addNewValueToKey('P', "K");
+	}
 
-    void buildPath(string fullString, Transform parent){
+	void buildPath(string fullString, Transform parent){
 		Vector3 dir = new Vector3(0, 0, 0);
 		Stack<Vector3> pathStack = new Stack<Vector3>();
-        for (int i = 0; i < fullString.Length; i++)
-        {
-            char c = fullString[i];
-            switch (c){
+		for (int i = 0; i < fullString.Length; i++)
+		{
+			char c = fullString[i];
+			switch (c){
 				case 'n':
 					Instantiate(normalTile, pathBuilder.position, normalTile.transform.rotation, parent);
 					break;
@@ -334,20 +334,20 @@ public class LevelGen : MonoBehaviour {
 				case 'x':
 					Instantiate(collectiblePrefab, pathBuilder.position + new Vector3(0, 1, 0), collectiblePrefab.transform.rotation, parent);
 					break;
-                case 'g':
-                    if (i + 1 < fullString.Length && fullString[i + 1] == 'x')
-                    {
-                        pathBuilder.position += dir;
-                        Instantiate(collectiblePrefab, pathBuilder.position + new Vector3(0, 1, 0), collectiblePrefab.transform.rotation, parent);
-                        pathBuilder.position += dir;
-                        i++;
-                    }
-                    else
-                    {
-                        pathBuilder.position += 2 * dir;
-                    }
-                    break;
-                case '(':
+				case 'g':
+					if (i + 1 < fullString.Length && fullString[i + 1] == 'x')
+					{
+						pathBuilder.position += dir;
+						Instantiate(collectiblePrefab, pathBuilder.position + new Vector3(0, 1, 0), collectiblePrefab.transform.rotation, parent);
+						pathBuilder.position += dir;
+						i++;
+					}
+					else
+					{
+						pathBuilder.position += 2 * dir;
+					}
+					break;
+				case '(':
 					pathStack.Push(pathBuilder.position);
 					break;
 				case '.':

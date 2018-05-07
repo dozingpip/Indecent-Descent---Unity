@@ -15,10 +15,10 @@ public class Multimap {
 	public void Add(char new_key, List<string> new_values, List<float> new_weights = null){
 		keys.Add(new_key);
 		values.Add(new_values);
-        if (new_weights == null)
-        {
-            new_weights = evenlyDistributeWeights(new_key);
-        }
+		if (new_weights == null)
+		{
+			new_weights = evenlyDistributeWeights(new_key);
+		}
 		weights.Add(new_weights);
 	}
 
@@ -26,30 +26,30 @@ public class Multimap {
 		return keys.Contains(key);
 	}
 
-    public List<float> evenlyDistributeWeights(char key)
-    {
-        int keyIndex = keys.IndexOf(key);
-        List<string> myValues = values[keyIndex];
-        int length = myValues.Count;
-        Debug.Log("Length is: " + length);
-        List<float> new_weights = new List<float>(length);
-        for (int i = 0; i < length; i++)
-        {
-            new_weights.Add(1 / length);
-        }
-        return new_weights;
-    }
+	public List<float> evenlyDistributeWeights(char key)
+	{
+		int keyIndex = keys.IndexOf(key);
+		List<string> myValues = values[keyIndex];
+		int length = myValues.Count;
+		Debug.Log("Length is: " + length);
+		List<float> new_weights = new List<float>(length);
+		for (int i = 0; i < length; i++)
+		{
+			new_weights.Add(1 / length);
+		}
+		return new_weights;
+	}
 
-    // A hacky solution to the minimum length issue
-    public void addNewValueToKey(char key, string newValue, List<float> new_weights = null)
-    {
-        int keyIndex = keys.IndexOf(key);
-        values[keyIndex].Add(newValue);
-        if (new_weights == null)
-        {
-            new_weights = evenlyDistributeWeights(key);
-        }
-    }
+	// A hacky solution to the minimum length issue
+	public void addNewValueToKey(char key, string newValue, List<float> new_weights = null)
+	{
+		int keyIndex = keys.IndexOf(key);
+		values[keyIndex].Add(newValue);
+		if (new_weights == null)
+		{
+			new_weights = evenlyDistributeWeights(key);
+		}
+	}
 
 	// Define the indexer to allow client code to use [] notation.
 	public string this[char i]
@@ -59,17 +59,17 @@ public class Multimap {
 			int keyIndex = keys.IndexOf(i);
 			List<string> myValues = values[keyIndex];
 			List<float> myWeights = weights[keyIndex];
-            float randomNum = Random.value;
-            int index = 0;
-            while(index < myWeights.Count - 1)
-            {
-                if(randomNum < myWeights[index])
-                {
-                    break;
-                }
-                randomNum -= myWeights[index];
-                index++;
-            }
+			float randomNum = Random.value;
+			int index = 0;
+			while(index < myWeights.Count - 1)
+			{
+				if(randomNum < myWeights[index])
+				{
+					break;
+				}
+				randomNum -= myWeights[index];
+				index++;
+			}
 			return myValues[index];
 		}
 	}
