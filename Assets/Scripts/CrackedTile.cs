@@ -10,7 +10,7 @@ public class CrackedTile : NormalTile {
 	// Use this for initialization
 	void Start () {
 		crackProgression = 0;
-		base.CollisionEnterEvent += crack;
+//		base.CollisionEnterEvent += crack;
 		//base.CollisionStayEvent += crack;
 	}
 

@@ -42,6 +42,8 @@ public class Player : MonoBehaviour {
 
 	private Vector3 knockbackDirection;
 
+	private Vector3 lateralVelocity;
+
 	private float yVelocity;
 
 	private bool isGrounded;
@@ -58,6 +60,7 @@ public class Player : MonoBehaviour {
 		knockbackStunTimer = 0;
 		isGrounded = false;
 		standing = FloorType.None;
+		lateralVelocity = new Vector3();
 	}
 
 	// Update is called once per frame
@@ -65,20 +68,10 @@ public class Player : MonoBehaviour {
 		// Reset the velocity and angular velocity to remove any weird applied forces
 		if(standing == FloorType.Ice)
 		{
-			Vector3 slowdown = rb.velocity.normalized * iceFriction;
-			if (rb.velocity.magnitude > slowdown.magnitude)
-			{
-				rb.velocity -= rb.velocity.normalized * iceFriction;
-			}
-			else
-			{
-				rb.velocity = Vector3.zero;
-			}
+
+				lateralVelocity *= (1 - (iceFriction * 5));
 		}
-		else
-		{
-			rb.velocity = Vector3.zero;
-		}
+		rb.velocity = Vector3.zero;
 		rb.angularVelocity = Vector3.zero;
 
 		if (knockbackStunTimer > 0)
@@ -99,7 +92,7 @@ public class Player : MonoBehaviour {
 	/// </summary>
 	private void UpdateMove()
 	{
-		Vector3 move = Vector3.zero;
+		Vector3 move = lateralVelocity;
 
 		if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
 		{
@@ -110,27 +103,48 @@ public class Player : MonoBehaviour {
 
 		bool[] d = { false, false, false, false };
 
+		Vector3 lateralMovement = new Vector3();
+
 		if (Input.GetAxisRaw("Vertical") > 0)
 		{
-			move.z = Speed;
+			lateralMovement.z = Speed;
 			d[0] = true;
 		}
 		else if (Input.GetAxisRaw("Vertical") < 0)
 		{
-			move.z = -Speed;
+			lateralMovement.z = -Speed;
 			d[1] = true;
 		}
 		if (Input.GetAxisRaw("Horizontal") > 0)
 		{
-			move.x = Speed;
+			lateralMovement.x = Speed;
 			d[2] = true;
 		}
 		else if (Input.GetAxisRaw("Horizontal") < 0)
 		{
-			move.x = -Speed;
+			lateralMovement.x = -Speed;
 			d[3] = true;
 		}
 
+		switch(standing)
+		{
+			case FloorType.Ice:
+				lateralVelocity += (lateralMovement.normalized * iceFriction);
+				lateralVelocity.x = Mathf.Clamp(lateralVelocity.x, -Speed * 1.5f, Speed * 1.5f);
+				lateralVelocity.z = Mathf.Clamp(lateralVelocity.z, -Speed * 1.5f, Speed * 1.5f);
+				break;
+			case FloorType.Sticky:
+				lateralVelocity = lateralMovement/2;
+				break;
+			default:
+				lateralVelocity = lateralMovement;
+				break;
+
+		}
+		move = lateralVelocity;
+
+		
+		// Handles the sprite
 		if (d[0] && !d[2] && !d[3])
 		{
 			facing = 2;
@@ -150,7 +164,6 @@ public class Player : MonoBehaviour {
 
 		Debug.Log("Grounded: " + isGrounded);
 
-		// Handles the sprite
 		if (!isGrounded)
 		{
 			animTimer -= Time.fixedDeltaTime;
@@ -166,7 +179,14 @@ public class Player : MonoBehaviour {
 		{
 			if (d[0] || d[1] || d[2] || d[3])
 			{
-				animTimer -= Time.fixedDeltaTime;
+				if(standing == FloorType.Sticky)
+				{
+					animTimer -= Time.fixedDeltaTime/2;
+				}
+				else
+				{
+					animTimer -= Time.fixedDeltaTime;
+				}
 				if (animTimer <= 0)
 				{
 					animFrame++;

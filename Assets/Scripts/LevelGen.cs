@@ -14,6 +14,7 @@ public class LevelGen : MonoBehaviour {
 	public Transform pathBuilder;
 	public int minPathLength = 10;
 	public int maxPathLength = 20;
+	public GameObject playerPrefab;
 	Stack<string> forbiddenDirections;
 
 	private bool hasPassedMinimum = false;
@@ -23,22 +24,31 @@ public class LevelGen : MonoBehaviour {
 	int numLevel = 0;
 	Queue<GameObject> levelQueue;
 	GameObject levels;
+
 	GameObject player;
 
 	float killLevelThreshold;
 
 	// Use this for initialization
 	void Start () {
-		player = GameObject.FindGameObjectWithTag("Player");
 		killLevelThreshold = wallHeight*5;
 		
 		levels = new GameObject();
 		levels.name = "Levels";
+
 		levelQueue = new Queue<GameObject>();
-		for(int i = 0; i<levelQueueHeight; i++){
+
+		GameObject firstLevel = newLevel();
+		levelQueue.Enqueue(firstLevel);
+		numLevel++;
+
+		for (int i = 0; i<levelQueueHeight; i++){
 			levelQueue.Enqueue(newLevel());
 			numLevel++;
 		}
+		Vector3 playerStart = firstLevel.transform.position;
+		playerStart.y += wallHeight * 2;
+		player = Instantiate(playerPrefab, playerStart, Quaternion.identity);
 	}
 
 	void Update(){
@@ -61,7 +71,7 @@ public class LevelGen : MonoBehaviour {
 		map = new Multimap();
 		mapIt();
 		string path = createString("S");
-		pathBuilder.position = new Vector3(Mathf.Floor(Random.Range(0, width)), wallHeight*numLevel, Mathf.Floor(Random.Range(0, length)));
+		pathBuilder.position = new Vector3(Mathf.Floor(Random.Range(0, width)), -wallHeight*numLevel, Mathf.Floor(Random.Range(0, length)));
 		buildPath(path, level.transform);
 
 		Vector3 mid = makeWallsAround(level.transform);
@@ -402,10 +412,10 @@ public class LevelGen : MonoBehaviour {
 		smallestZ= Mathf.Floor(midZ -(length/2.0f));
 		largestZ= Mathf.Floor(midZ +(length/2.0f));
 
-		Vector3 startOfWalls = new Vector3(smallestX, numLevel*wallHeight, smallestZ);
-		Vector3 upperRightEdge = new Vector3(smallestX, numLevel*wallHeight, largestZ);
-		Vector3 upperLeftEdge = new Vector3(largestX, numLevel*wallHeight, largestZ);
-		Vector3 lowerLeftEdge = new Vector3(largestX, numLevel*wallHeight, smallestZ);
+		Vector3 startOfWalls = new Vector3(smallestX, -numLevel*wallHeight, smallestZ);
+		Vector3 upperRightEdge = new Vector3(smallestX, -numLevel*wallHeight, largestZ);
+		Vector3 upperLeftEdge = new Vector3(largestX, -numLevel*wallHeight, largestZ);
+		Vector3 lowerLeftEdge = new Vector3(largestX, -numLevel*wallHeight, smallestZ);
 
 		GameObject walls = makeFourPointBox(startOfWalls, lowerLeftEdge, upperLeftEdge, upperRightEdge);
 		walls.transform.parent = level;

@@ -91,6 +91,8 @@ MonoBehaviour:
   pathBuilder: {fileID: 4323166817236376}
   minPathLength: 50
   maxPathLength: 60
+  playerPrefab: {fileID: 1940123458962842, guid: e53ca328cc9d1cc4db96d004c66592b9,
+    type: 2}
   width: 16
   length: 9
   wallHeight: 6
