@@ -18,7 +18,7 @@ public class LevelGen : MonoBehaviour {
 
 	private bool hasPassedMinimum = false;
 
-	float width = 10, length = 10, wallHeight = 6;
+	public float width = 20, length = 20, wallHeight = 6;
 	int levelQueueHeight = 5;
 	int numLevel = 0;
 	Queue<GameObject> levelQueue;
@@ -67,10 +67,10 @@ public class LevelGen : MonoBehaviour {
 		tileTypes.Add("i");
 		tileTypes.Add("c");
 
-		tileWeights.Add(0.25f);
-		tileWeights.Add(0.25f);
-		tileWeights.Add(0.25f);
-		tileWeights.Add(0.25f);
+		tileWeights.Add(0.5f);
+		tileWeights.Add(0.16f);
+		tileWeights.Add(0.16f);
+		tileWeights.Add(0.17f);
 		map.Add('T', tileTypes, tileWeights);
 
 		List<string> directionOptions = new List<string>();
@@ -92,9 +92,9 @@ public class LevelGen : MonoBehaviour {
 		pathOptions.Add("KJ");
 		pathOptions.Add("KGKDP");
 
-		pathWeights.Add(0.34f);
-		pathWeights.Add(0.33f);
-		pathWeights.Add(0.33f);
+		pathWeights.Add(0.4f);
+		pathWeights.Add(0.3f);
+		pathWeights.Add(0.3f);
 		map.Add('P', pathOptions, pathWeights);
 
 		List<string> junctionOptions = new List<string>();
@@ -402,7 +402,21 @@ public class LevelGen : MonoBehaviour {
 
 		GameObject walls = makeFourPointBox(startOfWalls, lowerLeftEdge, upperLeftEdge, upperRightEdge);
 		walls.transform.parent = level;
+
+		checkWalls(walls);
 		return new Vector3(midX, 0, midZ);
+	}
+
+	void checkWalls(GameObject walls){
+		foreach(Transform child in walls.transform){
+			Vector3 boxScale = new Vector3(child.localScale.x/2.5f, child.localScale.y / 2, child.localScale.z /2.5f);
+			Collider[] hitColliders = Physics.OverlapBox(child.position, boxScale, child.rotation);
+			foreach(Collider c in hitColliders){
+				if(c.CompareTag("Collectible") || c.tag.Contains("Tile")){
+					c.gameObject.SetActive(false);
+				}
+			}
+		}
 	}
 
 	GameObject makeCubeBetweenPoints(Vector3 pointA, Vector3 pointB){

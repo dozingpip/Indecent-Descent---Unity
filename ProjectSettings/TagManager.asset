@@ -10,6 +10,7 @@ TagManager:
   - Mud Tile
   - Normal Tile
   - Ice Tile
+  - Collectible
   layers:
   - Default
   - TransparentFX

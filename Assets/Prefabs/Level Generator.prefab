@@ -89,5 +89,8 @@ MonoBehaviour:
     type: 2}
   wallPrefab: {fileID: 1756263238054546, guid: 7a1f1df3a25d6064ab6625cb6fba3374, type: 2}
   pathBuilder: {fileID: 4323166817236376}
-  minPathLength: 25
-  maxPathLength: 30
+  minPathLength: 50
+  maxPathLength: 60
+  width: 16
+  length: 9
+  wallHeight: 6
