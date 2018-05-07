@@ -24,7 +24,7 @@ GameObject:
   - component: {fileID: 23337961723565196}
   m_Layer: 0
   m_Name: Ice Tile
-  m_TagString: Ice
+  m_TagString: Ice Tile
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

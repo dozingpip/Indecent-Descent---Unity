@@ -6,10 +6,10 @@ TagManager:
   tags:
   - scoreDisplay
   - PlayerFeet
-  - Ice
-  - Mud
-  - Normal
-  - Cracked
+  - Cracked Tile
+  - Mud Tile
+  - Normal Tile
+  - Ice Tile
   layers:
   - Default
   - TransparentFX

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum FloorType { Normal, Ice, Sticky, Cracked, None };
+
 public class Player : MonoBehaviour {
 
 	public int health = 5;
@@ -24,6 +26,8 @@ public class Player : MonoBehaviour {
 
 	public float gravityStrength = 1;
 
+	public float iceFriction = 0.5f;
+
 	private Rigidbody rb;
 
 	private int facing;
@@ -42,6 +46,8 @@ public class Player : MonoBehaviour {
 
 	private bool isGrounded;
 
+	private FloorType standing;
+
 	// Use this for initialization
 	void Start () {
 		rb = GetComponent<Rigidbody>();
@@ -51,12 +57,28 @@ public class Player : MonoBehaviour {
 		animTimer = animSpeed;
 		knockbackStunTimer = 0;
 		isGrounded = false;
+		standing = FloorType.None;
 	}
 
 	// Update is called once per frame
 	void FixedUpdate() {
 		// Reset the velocity and angular velocity to remove any weird applied forces
-		rb.velocity = Vector3.zero;
+		if(standing == FloorType.Ice)
+		{
+			Vector3 slowdown = rb.velocity.normalized * iceFriction;
+			if (rb.velocity.magnitude > slowdown.magnitude)
+			{
+				rb.velocity -= rb.velocity.normalized * iceFriction;
+			}
+			else
+			{
+				rb.velocity = Vector3.zero;
+			}
+		}
+		else
+		{
+			rb.velocity = Vector3.zero;
+		}
 		rb.angularVelocity = Vector3.zero;
 
 		if (knockbackStunTimer > 0)
@@ -183,7 +205,7 @@ public class Player : MonoBehaviour {
 	void OnCollisionEnter(Collision other)
 	{
 		/*
-		if(other.collider.CompareTag("Enemy"))
+		if(other.collider.tag.Contains("Enemy"))
 		{
 			takeDamage(1);
 		}
@@ -192,7 +214,24 @@ public class Player : MonoBehaviour {
 
 	void OnTriggerStay(Collider other)
 	{
-		if((other.CompareTag("Normal") || other.CompareTag("Ice") || other.CompareTag("Mud") || other.CompareTag("Cracked")) && !isGrounded)
+		if (other.tag.Contains("Normal"))
+		{
+			standing = FloorType.Normal;
+		}
+		else if (other.tag.Contains("Ice"))
+		{
+			standing = FloorType.Ice;
+		}
+		else if(other.tag.Contains("Mud"))
+		{
+			standing = FloorType.Sticky;
+		}
+		else if(other.tag.Contains("Cracked"))
+		{
+			standing = FloorType.Cracked;
+		}
+		Debug.Log("Standing " + standing);
+		if((other.tag.Contains("Normal") || other.tag.Contains("Ice") || other.tag.Contains("Mud") || other.tag.Contains("Cracked")) && !isGrounded)
 		{
 			Debug.Log("hit floor");
 			isGrounded = true;
@@ -202,9 +241,10 @@ public class Player : MonoBehaviour {
 
 	void OnTriggerExit(Collider other)
 	{
-		if((other.CompareTag("Normal") || other.CompareTag("Ice") || other.CompareTag("Mud") || other.CompareTag("Cracked")))
+		if((other.tag.Contains("Normal") || other.tag.Contains("Ice") || other.tag.Contains("Mud") || other.tag.Contains("Cracked")))
 		{
 			Debug.Log("left floor");
+			standing = FloorType.None;
 			isGrounded = false;
 		}
 	}
