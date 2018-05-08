@@ -11,30 +11,35 @@ public class LevelGen : MonoBehaviour {
 	public GameObject crackedTile;
 	public GameObject collectiblePrefab;
 	public GameObject wallPrefab;
+	public GameObject enemyPrefab;
 	public Transform pathBuilder;
 	public int minPathLength = 10;
 	public int maxPathLength = 20;
+	public float initialEnemyChance = 0.05f;
+	private float enemyChance;
 	public GameObject playerPrefab;
 	Stack<string> forbiddenDirections;
 
 	private bool hasPassedMinimum = false;
 
-	public float width = 20, length = 20, wallHeight = 6;
+	public float width = 20, length = 20;
+
+	private float wallHeight;
 	int levelQueueHeight = 5;
 	int numLevel = 0;
 	Queue<GameObject> levelQueue;
 	GameObject levels;
 
 	GameObject player;
-
-	float killLevelThreshold;
+	Rigidbody playerRB;
 
 	// Use this for initialization
 	void Start () {
-		killLevelThreshold = wallHeight*5;
-		
+		enemyChance = initialEnemyChance;
 		levels = new GameObject();
 		levels.name = "Levels";
+
+		wallHeight = GameManager.wallHeight;
 
 		levelQueue = new Queue<GameObject>();
 
@@ -46,13 +51,14 @@ public class LevelGen : MonoBehaviour {
 			levelQueue.Enqueue(newLevel());
 			numLevel++;
 		}
-		Vector3 playerStart = firstLevel.transform.position;
-		playerStart.y += wallHeight * 2;
+		Vector3 playerStart = Vector3.zero;
+		playerStart.y += wallHeight;
 		player = Instantiate(playerPrefab, playerStart, Quaternion.identity);
+		playerRB = player.GetComponent<Rigidbody>();
 	}
 
 	void Update(){
-		if((player.transform.position.y - levelQueue.Peek().transform.position.y) > killLevelThreshold){
+		if((playerRB.position.y - levelQueue.Peek().transform.position.y) < -(wallHeight * 2)){
 			DeleteOneAddOneLevel();
 		}
 	}
@@ -66,6 +72,7 @@ public class LevelGen : MonoBehaviour {
 
 	GameObject newLevel(){
 		GameObject level = new GameObject();
+		level.transform.position = new Vector3(0, -wallHeight*numLevel, 0);
 		level.name = "Level "+numLevel;
 		forbiddenDirections = new Stack<string>();
 		map = new Multimap();
@@ -77,6 +84,10 @@ public class LevelGen : MonoBehaviour {
 		Vector3 mid = makeWallsAround(level.transform);
 		level.transform.position-=mid;
 		level.transform.parent = levels.transform;
+		checkWalls();
+
+		spawnEnemies(level.transform);
+		enemyChance = initialEnemyChance * Mathf.Sqrt(numLevel);
 		return level;
 	}
 
@@ -89,10 +100,10 @@ public class LevelGen : MonoBehaviour {
 		tileTypes.Add("i");
 		tileTypes.Add("c");
 
-		tileWeights.Add(0.5f);
-		tileWeights.Add(0.16f);
-		tileWeights.Add(0.16f);
-		tileWeights.Add(0.17f);
+		tileWeights.Add(0.65f);
+		tileWeights.Add(0.10f);
+		tileWeights.Add(0.10f);
+		tileWeights.Add(0.15f);
 		map.Add('T', tileTypes, tileWeights);
 
 		List<string> directionOptions = new List<string>();
@@ -102,10 +113,10 @@ public class LevelGen : MonoBehaviour {
 		directionOptions.Add("l");
 		directionOptions.Add("r");
 
-		directionWeights.Add(0.25f);
-		directionWeights.Add(0.25f);
-		directionWeights.Add(0.25f);
-		directionWeights.Add(0.25f);
+		directionWeights.Add(0.33f);
+		directionWeights.Add(0.33f);
+		directionWeights.Add(0.17f);
+		directionWeights.Add(0.17f);
 		map.Add('D', directionOptions, directionWeights);
 
 		List<string> pathOptions = new List<string>();
@@ -133,8 +144,8 @@ public class LevelGen : MonoBehaviour {
 		tileCollectOptions.Add("Tx");
 		tileCollectOptions.Add("T");
 
-		tileCollectWeights.Add(0.2f);
-		tileCollectWeights.Add(0.8f);
+		tileCollectWeights.Add(0.05f);
+		tileCollectWeights.Add(0.95f);
 		map.Add('K', tileCollectOptions, tileCollectWeights);
 
 		List<string> gapOptions = new List<string>();
@@ -142,8 +153,8 @@ public class LevelGen : MonoBehaviour {
 		gapOptions.Add("gx");
 		gapOptions.Add("g");
 
-		gapWeights.Add(0.2f);
-		gapWeights.Add(0.8f);
+		gapWeights.Add(0.20f);
+		gapWeights.Add(0.80f);
 		map.Add('G', gapOptions, gapWeights);
 
 		List<string> startOptions = new List<string>();
@@ -165,7 +176,12 @@ public class LevelGen : MonoBehaviour {
 			}
 			if(!hasPassedMinimum && pathLength > minPathLength)
 			{
-				map.addNewValueToKey('P', "K");
+				List<float> newPathWeights = new List<float>();
+				newPathWeights.Add(0.3f);
+				newPathWeights.Add(0.25f);
+				newPathWeights.Add(0.25f);
+				newPathWeights.Add(0.2f);
+				map.addNewValueToKey('P', "K", newPathWeights);
 				hasPassedMinimum = true;
 			}
 		}
@@ -279,7 +295,17 @@ public class LevelGen : MonoBehaviour {
 							forbiddenDirections.Pop();
 							forbiddenDirections.Pop();
 						}
-					}else{
+					}
+					else if(nextPath == "KGKDP")
+					{
+						string dir = map['D'];
+						while (forbiddenDirections.Contains(dir))
+						{
+							dir = map['D'];
+						}
+						i += "KGK" + dir + "P";
+					}
+					else {
 						i+=nextPath;
 					}
 				}
@@ -309,8 +335,12 @@ public class LevelGen : MonoBehaviour {
 			char c = fullString[i];
 
 			if(isTile(c)){
+				if(c == 'g')
+				{
+					pathBuilder.position += dir;
+				}
 				Vector3 boxScale = new Vector3(0.25f, 0.25f, 0.25f);
-				Collider[] hitColliders = Physics.OverlapBox(pathBuilder.position, boxScale, pathBuilder.rotation);
+				Collider[] hitColliders = Physics.OverlapSphere(pathBuilder.position, 0.25f);
 				if(hitColliders.Length<1){
 					switch(c){
 						case 'n':
@@ -328,14 +358,15 @@ public class LevelGen : MonoBehaviour {
 						case 'g':
 							if (i + 1 < fullString.Length && fullString[i + 1] == 'x')
 							{
-								pathBuilder.position += dir;
-								Instantiate(collectiblePrefab, pathBuilder.position + new Vector3(0, 1, 0), collectiblePrefab.transform.rotation, parent);
+								Debug.Log("SPAWNING GAP COLLECTIBLE");
+								Instantiate(collectiblePrefab, pathBuilder.position + new Vector3(0, 2, 0), collectiblePrefab.transform.rotation, parent);
 								pathBuilder.position += dir;
 								i++;
 							}
 							else
 							{
-								pathBuilder.position += 2 * dir;
+								Debug.Log("PLACING GAP");
+								pathBuilder.position += dir;
 							}
 							break;
 					}
@@ -343,19 +374,19 @@ public class LevelGen : MonoBehaviour {
 			}else{
 				switch (c){
 					case 'u':
-						dir = new Vector3(1, 0, 0);
-						pathBuilder.position+= dir;
-						break;
-					case 'd':
-						dir = new Vector3(-1, 0, 0);
-						pathBuilder.position+= dir;
-						break;
-					case 'l':
 						dir = new Vector3(0, 0, 1);
 						pathBuilder.position+= dir;
 						break;
-					case 'r':
+					case 'd':
 						dir = new Vector3(0, 0, -1);
+						pathBuilder.position+= dir;
+						break;
+					case 'l':
+						dir = new Vector3(-1, 0, 0);
+						pathBuilder.position+= dir;
+						break;
+					case 'r':
+						dir = new Vector3(1, 0, 0);
 						pathBuilder.position+= dir;
 						break;
 					case 'x':
@@ -420,20 +451,34 @@ public class LevelGen : MonoBehaviour {
 		GameObject walls = makeFourPointBox(startOfWalls, lowerLeftEdge, upperLeftEdge, upperRightEdge);
 		walls.transform.parent = level;
 
-		checkWalls(walls);
+//		checkWalls(walls, midX, midZ);
 		return new Vector3(midX, 0, midZ);
 	}
 
-	void checkWalls(GameObject walls){
-		foreach(Transform child in walls.transform){
-			Vector3 boxScale = new Vector3(child.localScale.x/2.5f, child.localScale.y / 2, child.localScale.z /2.5f);
-			Collider[] hitColliders = Physics.OverlapBox(child.position, boxScale, child.rotation);
-			foreach(Collider c in hitColliders){
-				if(c.CompareTag("Collectible") || c.tag.Contains("Tile")){
-					c.gameObject.SetActive(false);
-				}
+	void checkWalls(/*GameObject walls, float midX, float midZ*/){
+		List<Collider> hitColliders = new List<Collider>();
+		hitColliders.AddRange(Physics.OverlapBox(new Vector3(0, -wallHeight * numLevel, Mathf.Floor(length / 2) + 1), new Vector3(width/2, wallHeight/2, 0.5f), Quaternion.identity));
+		hitColliders.AddRange(Physics.OverlapBox(new Vector3(0, -wallHeight * numLevel, Mathf.Floor(-length / 2) - 1), new Vector3(width / 2, wallHeight / 2, 0.5f), Quaternion.identity));
+		hitColliders.AddRange(Physics.OverlapBox(new Vector3(Mathf.Floor(width / 2) + 1, -wallHeight * numLevel, 0), new Vector3(0.5f, wallHeight / 2, length / 2), Quaternion.identity));
+		hitColliders.AddRange(Physics.OverlapBox(new Vector3(Mathf.Floor(-width / 2) - 1, -wallHeight * numLevel, 0), new Vector3(0.5f, wallHeight / 2, length / 2), Quaternion.identity));
+		foreach (Collider c in hitColliders)
+		{
+			if (c.CompareTag("Collectible") || c.tag.Contains("Tile"))
+			{
+				c.gameObject.SetActive(false);
 			}
 		}
+
+		//foreach (Transform child in walls.transform){
+		//	Vector3 boxScale = new Vector3(child.localScale.x/2.5f, child.localScale.y / 2, child.localScale.z /2.5f);
+		//	Vector3 checkPos = new Vector3(midX + child.position.x, child.position.y, midZ + child.position.z);
+		//	Collider[] hitColliders = Physics.OverlapBox(child.position, boxScale, child.rotation);
+		//	foreach(Collider c in hitColliders){
+		//		if(c.CompareTag("Collectible") || c.tag.Contains("Tile")){
+		//			c.gameObject.SetActive(false);
+		//		}
+		//	}
+		//}
 	}
 
 	GameObject makeCubeBetweenPoints(Vector3 pointA, Vector3 pointB){
@@ -458,5 +503,45 @@ public class LevelGen : MonoBehaviour {
 		cube2.transform.parent =  walls.transform;
 		cube3.transform.parent =  walls.transform;
 		return walls;
+	}
+
+	void spawnEnemies(Transform level)
+	{
+		float tempEnemyChance = enemyChance;
+		float thisRandom = 0;
+		while((thisRandom = Random.value) < tempEnemyChance)
+		{
+			int wall = Random.Range(0, 3);
+			float y = (-wallHeight * numLevel) + 1;
+			float x = width / 2;
+			float z = length / 2;
+			switch (wall)
+			{
+				//North wall
+				case 0:
+					x = Random.Range(-width / 2, width / 2);
+					break;
+				//East wall
+				case 1:
+					z = Random.Range(-width / 2, width / 2);
+					break;
+				//South wall
+				case 2:
+					z = -z;
+					x = Random.Range(-width / 2, width / 2);
+					break;
+				//West wall
+				case 3:
+					x = -x;
+					z = Random.Range(-width / 2, width / 2);
+					break;
+				default:
+					break;
+			}
+			Vector3 enemyPos = new Vector3(x, y, z);
+			GameObject enemy = Instantiate(enemyPrefab, enemyPos, Quaternion.identity);
+			enemy.transform.parent = level;
+			tempEnemyChance -= thisRandom;
+		}	
 	}
 }

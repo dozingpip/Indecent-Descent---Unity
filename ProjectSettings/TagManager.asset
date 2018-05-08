@@ -11,6 +11,7 @@ TagManager:
   - Normal Tile
   - Ice Tile
   - Collectible
+  - floorDisplay
   layers:
   - Default
   - TransparentFX

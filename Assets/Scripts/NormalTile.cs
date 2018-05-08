@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class NormalTile : MonoBehaviour {
 
-	float timeColliding = 0;
+//	float timeColliding = 0;
 
 	//public delegate void EventHandler();
 	//public event EventHandler CollisionEnterEvent = () => {};

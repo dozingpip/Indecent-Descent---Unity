@@ -6,6 +6,8 @@ public enum FloorType { Normal, Ice, Sticky, Cracked, None };
 
 public class Player : MonoBehaviour {
 
+	public static Player instance = null;
+
 	public int health = 5;
 
 	public float Speed = 0.125f;
@@ -27,6 +29,8 @@ public class Player : MonoBehaviour {
 	public float gravityStrength = 1;
 
 	public float iceFriction = 0.5f;
+
+	public float terminalVelocity = -1;
 
 	private Rigidbody rb;
 
@@ -50,6 +54,22 @@ public class Player : MonoBehaviour {
 
 	private FloorType standing;
 
+	private List<GameObject> standingOn;
+
+	//Awake is always called before any Start functions
+	void Awake()
+	{
+		//Check if instance already exists
+		if (instance == null)
+			//if not, set instance to this
+			instance = this;
+
+		//If instance already exists and it's not this:
+		else if (instance != this)
+			//Then destroy this. This enforces our singleton pattern, meaning there can only ever be one instance of a GameManager.
+			Destroy(gameObject);
+	}
+
 	// Use this for initialization
 	void Start () {
 		rb = GetComponent<Rigidbody>();
@@ -61,6 +81,17 @@ public class Player : MonoBehaviour {
 		isGrounded = false;
 		standing = FloorType.None;
 		lateralVelocity = new Vector3();
+		standingOn = new List<GameObject>();
+	}
+
+	void Update()
+	{
+		if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
+		{
+			yVelocity = jumpSpeed;
+			isGrounded = false;
+			animFrame = 0;
+		}
 	}
 
 	// Update is called once per frame
@@ -94,12 +125,41 @@ public class Player : MonoBehaviour {
 	{
 		Vector3 move = lateralVelocity;
 
-		if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
+		int i = 0;
+		while (i < standingOn.Count)
 		{
-			yVelocity = jumpSpeed;
-			isGrounded = false;
-			animFrame = 0;
+			GameObject tile = standingOn[i];
+			if (!tile.activeSelf)
+			{
+				standingOn.RemoveAt(i);
+			}
+			else
+			{
+				i++;
+			}
 		}
+
+		//Debug.Log(standingOn);
+
+		if (standingOn.Count == 0)
+		{
+			//Debug.Log("Not Grounded");
+			standing = FloorType.None;
+			isGrounded = false;
+		}
+		else
+		{
+			isGrounded = true;
+		}
+
+		
+
+		//if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
+		//{
+		//	yVelocity = jumpSpeed;
+		//	isGrounded = false;
+		//	animFrame = 0;
+		//}
 
 		bool[] d = { false, false, false, false };
 
@@ -162,8 +222,6 @@ public class Player : MonoBehaviour {
 			facing = 3;
 		}
 
-		Debug.Log("Grounded: " + isGrounded);
-
 		if (!isGrounded)
 		{
 			animTimer -= Time.fixedDeltaTime;
@@ -210,9 +268,13 @@ public class Player : MonoBehaviour {
 		if(!isGrounded)
 		{
 			yVelocity -= gravityStrength * Time.fixedDeltaTime;
+			if(yVelocity < terminalVelocity)
+			{
+				yVelocity = terminalVelocity;
+			}
 		}
 		
-		Debug.Log("yVelocity " + yVelocity);
+		//Debug.Log("yVelocity " + yVelocity);
 		rb.position += move;
 		//isGrounded = false;
 	}
@@ -224,6 +286,7 @@ public class Player : MonoBehaviour {
 
 	void OnCollisionEnter(Collision other)
 	{
+
 		/*
 		if(other.collider.tag.Contains("Enemy"))
 		{
@@ -232,8 +295,28 @@ public class Player : MonoBehaviour {
 		*/
 	}
 
+	void OnTriggerEnter(Collider other)
+	{
+		if (other.tag.Contains("Tile"))
+		{
+			isGrounded = true;
+			yVelocity = 0;
+			standingOn.Add(other.gameObject);
+		}
+		if (other.tag.Contains("Cracked"))
+		{
+			standing = FloorType.Cracked;
+			CrackedTile crackedFloor = other.gameObject.GetComponent<CrackedTile>();
+			if (!crackedFloor.isCracking())
+			{
+				crackedFloor.steppedOn();
+			}
+		}
+	}
+
 	void OnTriggerStay(Collider other)
 	{
+		//bool pitFall = false;
 		if (other.tag.Contains("Normal"))
 		{
 			standing = FloorType.Normal;
@@ -249,32 +332,43 @@ public class Player : MonoBehaviour {
 		else if(other.tag.Contains("Cracked"))
 		{
 			standing = FloorType.Cracked;
+			//CrackedTile crackedFloor = other.gameObject.GetComponent<CrackedTile>();
+			//if(!crackedFloor.isCracking())
+			//{
+			//	crackedFloor.steppedOn();
+			//}
+			//if(!crackedFloor.gameObject.activeSelf)
+			//{
+			//	isGrounded = false;
+			//	pitFall = true;
+			//}
 		}
-		Debug.Log("Standing " + standing);
-		if((other.tag.Contains("Normal") || other.tag.Contains("Ice") || other.tag.Contains("Mud") || other.tag.Contains("Cracked")) && !isGrounded)
-		{
-			Debug.Log("hit floor");
-			isGrounded = true;
-			yVelocity = 0;
-		}
+		//Debug.Log("Standing " + standing);
+		//if(!pitFall && (other.tag.Contains("Tile")) && !isGrounded)
+		//{
+		//	Debug.Log("hit floor");
+		//	isGrounded = true;
+		//	yVelocity = 0;
+		//}
 	}
 
 	void OnTriggerExit(Collider other)
 	{
-		if((other.tag.Contains("Normal") || other.tag.Contains("Ice") || other.tag.Contains("Mud") || other.tag.Contains("Cracked")))
+		if((other.tag.Contains("Tile")))
 		{
-			Debug.Log("left floor");
-			standing = FloorType.None;
-			isGrounded = false;
+			standingOn.Remove(other.gameObject);
 		}
 	}
 
 	public void takeDamage(int amount)
 	{
-		health -= amount;
-		if(health <= 0)
+		if(knockbackStunTimer <= 0)
 		{
-			GameManager.instance.gameOver();
+			health -= amount;
+			if (health <= 0)
+			{
+				GameManager.instance.gameOver();
+			}
 		}
 	}
 
@@ -282,5 +376,11 @@ public class Player : MonoBehaviour {
 	{
 		knockbackStunTimer = knockbackStunLength;
 		knockbackDirection = direction.normalized;
+	}
+
+	public void checkFooting()
+	{
+		standing = FloorType.None;
+		isGrounded = false;
 	}
 }

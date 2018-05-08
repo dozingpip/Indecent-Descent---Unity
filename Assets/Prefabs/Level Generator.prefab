@@ -88,11 +88,13 @@ MonoBehaviour:
   collectiblePrefab: {fileID: 1082613637445898, guid: f379e98091a2e5748b275b527ce02875,
     type: 2}
   wallPrefab: {fileID: 1756263238054546, guid: 7a1f1df3a25d6064ab6625cb6fba3374, type: 2}
+  enemyPrefab: {fileID: 1913739680418762, guid: d64569f99b959ab49bd284579af5cefd,
+    type: 2}
   pathBuilder: {fileID: 4323166817236376}
-  minPathLength: 50
-  maxPathLength: 60
+  minPathLength: 70
+  maxPathLength: 80
   playerPrefab: {fileID: 1940123458962842, guid: e53ca328cc9d1cc4db96d004c66592b9,
     type: 2}
   width: 16
   length: 9
-  wallHeight: 6
+  wallHeight: 10

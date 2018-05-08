@@ -9,18 +9,27 @@ public class GameManager : MonoBehaviour
 	//Static instance of GameManager which allows it to be accessed by any other script.
 	public static GameManager instance = null;
 
+	public const float wallHeight = 14;
+
 	//number of total scenes
 	public int scenes;
 
 	static int points;
 
+	public static int floor;
+
+	static bool inGame;
+
 	string mainSceneName = "levelQuestionMark";
 
 	Text scoreDisplay;
 
+	Text floorDisplay;
+
 	//Awake is always called before any Start functions
 	void Awake()
 	{
+		inGame = false;
 		//Check if instance already exists
 		if (instance == null)
 				//if not, set instance to this
@@ -57,6 +66,12 @@ public class GameManager : MonoBehaviour
 			scoreDisplay = scoreDispTemp[0].GetComponent<Text>();
 			scoreDisplay.text = "Score: " + points;
 		}
+		GameObject temp = GameObject.FindGameObjectWithTag("floorDisplay");
+		if (temp != null)
+		{
+			floorDisplay = GameObject.FindGameObjectWithTag("floorDisplay").GetComponent<Text>();
+			floorDisplay.text = "Floor: " + 1;
+		}
 	}
 
 	//load level by scene name instead of index.
@@ -65,17 +80,35 @@ public class GameManager : MonoBehaviour
 			SceneManager.LoadScene(name);
 			if(name==mainSceneName){
 				points = 0;
+				inGame = true;
 			}
 		}
 	}
 
 	public void addPoint(){
 		points++;
-		scoreDisplay.text = "Score: " + points;
+		if(scoreDisplay != null)
+		{
+			scoreDisplay.text = "Score: " + points;
+		}
+	}
+
+	void Update()
+	{
+		if(inGame && Player.instance != null)
+		{
+			floor = 2 + (Mathf.FloorToInt(-Player.instance.transform.position.y / wallHeight));
+			Debug.Log("Level: " + floor);
+			if (floorDisplay != null)
+			{
+				floorDisplay.text = "Floor: " + floor;
+			}
+		}
 	}
 
     public void gameOver()
     {
-        SceneManager.LoadScene("mainMenu");
+		inGame = false;
+        SceneManager.LoadScene("gameOver");
     }
 }

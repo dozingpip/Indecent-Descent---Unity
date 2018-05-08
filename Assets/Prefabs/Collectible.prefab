@@ -24,7 +24,7 @@ GameObject:
   - component: {fileID: 23300865131969172}
   - component: {fileID: 108517415996971926}
   - component: {fileID: 114539345102113446}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: Collectible
   m_TagString: Collectible
   m_Icon: {fileID: 0}
@@ -44,7 +44,7 @@ GameObject:
   - component: {fileID: 23541905055139996}
   - component: {fileID: 199552220498848136}
   - component: {fileID: 198716574292023148}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: particle emitter
   m_TagString: Untagged
   m_Icon: {fileID: 0}
