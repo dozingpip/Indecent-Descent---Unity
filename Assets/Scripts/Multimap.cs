@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+// maps out what each tile should parse into so far as the grammar and has weights for each possible value
 public class Multimap {
 	List<char> keys;
 	List<List<string>> values;
@@ -52,6 +53,7 @@ public class Multimap {
 	}
 
 	// Define the indexer to allow client code to use [] notation.
+	// picks a random value from this map key based on value weights
 	public string this[char i]
 	{
 		get 

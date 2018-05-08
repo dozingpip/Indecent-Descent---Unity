@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class LevelGen : MonoBehaviour {
-
+	// maps out what each tile should parse into so far as the grammar and has weights for each possible value
 	Multimap map;
 	public GameObject normalTile;
 	public GameObject iceTile;
@@ -12,22 +12,33 @@ public class LevelGen : MonoBehaviour {
 	public GameObject collectiblePrefab;
 	public GameObject wallPrefab;
 	public GameObject enemyPrefab;
+	// used to determine where to place tiles
 	public Transform pathBuilder;
 	public int minPathLength = 10;
+	// should start wrapping up the string generation once this number of 'P' and or 'G'
 	public int maxPathLength = 20;
 	public float initialEnemyChance = 0.05f;
 	private float enemyChance;
 	public GameObject playerPrefab;
+	// stores the most recent direction terminal in order to make sure the next direction isn't that
+	// it's a stack so it works for junctions too
 	Stack<string> forbiddenDirections;
 
 	private bool hasPassedMinimum = false;
 
+	// size of the room the level should fit into
 	public float width = 20, length = 20;
 
+	// height of the walls generated for each level, equivalent to height of a level
 	private float wallHeight;
+	// how large the level queue starts out as
 	int levelQueueHeight = 5;
+	// number of levels generated so far
 	int numLevel = 0;
+	//since levels deleted and immediately replaced with a level further down,
+	//it will always have "levelQueueHeight" levels after the start
 	Queue<GameObject> levelQueue;
+	// parent object that will hold all the levels
 	GameObject levels;
 
 	GameObject player;
@@ -91,6 +102,7 @@ public class LevelGen : MonoBehaviour {
 		return level;
 	}
 
+	// adds all the keys/ operators in the grammar (with values and weights) to the multimap
 	void mapIt()
 	{
 		List<string> tileTypes = new List<string>();
@@ -162,9 +174,11 @@ public class LevelGen : MonoBehaviour {
 		map.Add('S', startOptions);
 	}
 
+	// make by parsing key out to what it should be based on the multimap
 	string createString(string key)
 	{
 		int pathLength = 1;
+		// make sure the path doesn't go on forever
 		while(pathLength < maxPathLength && !isKeyFullOfTerminals(key)){
 			key = parseIt(key);
 			foreach(char c in key){
@@ -194,6 +208,8 @@ public class LevelGen : MonoBehaviour {
 		return key;
 	}
 
+	// return a bool based on whether the string has only characters that correspond to terminal
+	// operators in the level gen grammar
 	bool isKeyFullOfTerminals(string key){
 		foreach(char c in key){
 			if (!isTerminal(c)){
@@ -203,6 +219,8 @@ public class LevelGen : MonoBehaviour {
 		return true;
 	}
 
+	// get a string, return whatever it would be according to multimap
+	// special cases for junctions and directions
 	string parseIt(string str){
 		string i = "";
 		foreach(char c in str){
@@ -314,6 +332,8 @@ public class LevelGen : MonoBehaviour {
 		return i;
 	}
 
+	// once max path length is reached this is called to just make sure that any non-terminal operators
+	// still in the string get turned into something (a tile)
 	string wrapup(string str){
 		string i = "";
 		foreach(char c in str){
@@ -327,6 +347,7 @@ public class LevelGen : MonoBehaviour {
 		return i;
 	}
 
+	// build the path and put the resulting tiles inside of the parent transform
 	void buildPath(string fullString, Transform parent){
 		Vector3 dir = new Vector3(0, 0, 0);
 		Stack<Vector3> pathStack = new Stack<Vector3>();
@@ -414,6 +435,7 @@ public class LevelGen : MonoBehaviour {
 		return (c == 'n' || c == 'i' || c == 's' || c == 'c' || c == 'g');
 	}
 
+	// make walls around the given parent object (should hold all the tiles and collectibles generated from build path)
 	Vector3 makeWallsAround(Transform level){
 		float smallestX = level.GetChild(0).position.x;
 		float smallestZ = level.GetChild(0).position.z;
@@ -455,6 +477,7 @@ public class LevelGen : MonoBehaviour {
 		return new Vector3(midX, 0, midZ);
 	}
 
+	// check if there are any tiles or collectibles overlapping with the walls (and set any that are to inactive)
 	void checkWalls(/*GameObject walls, float midX, float midZ*/){
 		List<Collider> hitColliders = new List<Collider>();
 		hitColliders.AddRange(Physics.OverlapBox(new Vector3(0, -wallHeight * numLevel, Mathf.Floor(length / 2) + 1), new Vector3(width/2, wallHeight/2, 0.5f), Quaternion.identity));
@@ -481,6 +504,7 @@ public class LevelGen : MonoBehaviour {
 		//}
 	}
 
+	// create a cube object that stretches between 2 vector points.
 	GameObject makeCubeBetweenPoints(Vector3 pointA, Vector3 pointB){
 		Vector3 between = pointB - pointA;
 		GameObject cube = Instantiate(wallPrefab, pointA, Quaternion.identity);
@@ -491,6 +515,7 @@ public class LevelGen : MonoBehaviour {
 		return cube;
 	}
 
+	// make a box out of 4 cubes, using 4 vectors as points of the individual cubes
 	GameObject makeFourPointBox(Vector3 point0, Vector3 point1, Vector3 point2, Vector3 point3){
 		GameObject walls = new GameObject();
 		walls.name = "walls";
@@ -505,6 +530,7 @@ public class LevelGen : MonoBehaviour {
 		return walls;
 	}
 
+	// spawn enemies on the given level
 	void spawnEnemies(Transform level)
 	{
 		float tempEnemyChance = enemyChance;
